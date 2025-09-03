@@ -1,41 +1,41 @@
-CC = clang
-CLANG = clang
+CC := clang
+CLANG := clang
 
+SRC_DIR := src
 BUILD_DIR := build
 
 SRC := \
-	src/endian.c \
-	src/mbadu_ascii.c \
-	src/mbadu_tcp.c \
-	src/mbadu.c \
-	src/mbcoil.c \
-	src/mbcrc.c \
-	src/mbfn_coils.c \
-	src/mbfn_digs.c \
-	src/mbfn_regs.c \
-	src/mbfn_serial.c \
-	src/mbinst.c \
-	src/mbpdu.c \
-	src/mbreg.c \
-	src/mbsupp.c \
-	src/mbtest.c
+	endian.c \
+	mbadu_ascii.c \
+	mbadu_tcp.c \
+	mbadu.c \
+	mbcoil.c \
+	mbcrc.c \
+	mbfn_coils.c \
+	mbfn_digs.c \
+	mbfn_regs.c \
+	mbfn_serial.c \
+	mbinst.c \
+	mbpdu.c \
+	mbreg.c \
+	mbsupp.c \
+	mbtest.c
 
-OBJECTS := ${addprefix ${BUILD_DIR}/, ${SRC:.c=.o}}
-DEPENDENCY_OBJECTS := ${OBJECTS:.o=.d}
+OBJ := ${addprefix ${BUILD_DIR}/, ${SRC:.c=.o}}
+DEPENDENCY_OBJ := ${OBJ:.o=.d}
 
-CFLAGS = \
+CFLAGS := \
 	-std=c11 \
-	-Isrc/ \
 	-Wall -Wextra -Wmissing-include-dirs \
 	-Wswitch-default -Wpedantic \
 	-Wno-pointer-to-int-cast -Wno-int-to-pointer-cast
 
 # Generate dependency information
-CFLAGS += -MMD -MP -MF"$(@:%.o=%.d)"
+CFLAGS += -MP -MMD
 
 .PHONY: all test clean analyze
 
-all: ${OBJECTS}
+all: ${OBJ}
 
 test:
 	${MAKE} -C test test
@@ -59,11 +59,10 @@ clean:
 	@rm -rf ${BUILD_DIR}/
 	${MAKE} -C test clean
 
-${BUILD_DIR}/%.o: %.c Makefile | ${BUILD_DIR}
-	@mkdir -p ${dir $@}
+${BUILD_DIR}/%.o: ${SRC_DIR}/%.c Makefile | ${BUILD_DIR}
 	${CC} ${CFLAGS} -o $@ -c $<
 
 ${BUILD_DIR}:
 	@mkdir $@
 
--include ${DEPENDENCY_OBJECTS}
+-include ${DEPENDENCY_OBJ}
