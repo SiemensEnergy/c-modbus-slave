@@ -22,7 +22,7 @@ SRC := \
 	mbtest.c
 
 OBJ := ${addprefix ${BUILD_DIR}/, ${SRC:.c=.o}}
-DEPENDENCY_OBJ := ${OBJ:.o=.d}
+DEP_FILES := ${OBJ:.o=.d}
 
 CFLAGS := \
 	-std=c11 \
@@ -65,4 +65,4 @@ ${BUILD_DIR}/%.o: ${SRC_DIR}/%.c Makefile | ${BUILD_DIR}
 ${BUILD_DIR}:
 	@mkdir $@
 
--include ${DEPENDENCY_OBJ}
+-include ${DEP_FILES}

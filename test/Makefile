@@ -27,7 +27,7 @@ TESTS := ${patsubst ${TEST_SRC_DIR}/%.c,${BUILD_DIR}/${TEST_SRC_DIR}/%,${TEST_SR
 TEST_OBJ := ${addprefix ${BUILD_DIR}/, ${TEST_SRC:.c=.o}}
 LIB_OBJ := ${addprefix ${BUILD_DIR}/lib/, ${LIB_SRC:.c=.o}}
 
-DEPENDENCY_OBJ := ${TEST_OBJ:.o=.d} ${LIB_OBJ:.o=.d}
+DEP_FILES := ${TEST_OBJ:.o=.d} ${LIB_OBJ:.o=.d}
 
 CFLAGS := -std=c11 -I../src
 # Generate dependency information
@@ -68,4 +68,4 @@ ${BUILD_DIR}/lib/%.o: ../src/%.c Makefile | ${BUILD_DIR}
 ${BUILD_DIR}:
 	@mkdir $@
 
--include ${DEPENDENCY_OBJ}
+-include ${DEP_FILES}
