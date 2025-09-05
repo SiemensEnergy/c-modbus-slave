@@ -1,10 +1,10 @@
-CC = clang
-LD = clang
+CC := clang
+LD := clang
 
 TEST_SRC_DIR := src
 BUILD_DIR := build
 
-APP_SRC := \
+LIB_SRC := \
 	endian.c \
 	mbadu_ascii.c \
 	mbadu_tcp.c \
@@ -24,14 +24,14 @@ APP_SRC := \
 TEST_SRC := ${sort ${wildcard ${TEST_SRC_DIR}/*.c}}
 TESTS := ${patsubst ${TEST_SRC_DIR}/%.c,${BUILD_DIR}/${TEST_SRC_DIR}/%,${TEST_SRC}}
 
-TEST_OBJECTS := ${addprefix ${BUILD_DIR}/, ${TEST_SRC:.c=.o}}
-APP_OBJECTS := ${addprefix ${BUILD_DIR}/app/, ${APP_SRC:.c=.o}}
+TEST_OBJ := ${addprefix ${BUILD_DIR}/, ${TEST_SRC:.c=.o}}
+LIB_OBJ := ${addprefix ${BUILD_DIR}/lib/, ${LIB_SRC:.c=.o}}
 
-DEPENDENCY_OBJECTS := ${TEST_OBJECTS:.o=.d} ${APP_OBJECTS:.o=.d}
+DEP_FILES := ${TEST_OBJ:.o=.d} ${LIB_OBJ:.o=.d}
 
-CFLAGS = -std=c11 -I../src
+CFLAGS := -std=c11 -I../src
 # Generate dependency information
-CFLAGS += -MMD -MP -MF"${@:%.o=%.d}"
+CFLAGS += -MP -MMD
 
 # Clang Undefined Behavior Sanitizer
 ifeq (${CC}, clang)
@@ -43,7 +43,7 @@ CFLAGS += \
 	-fsanitize=nullability
 endif
 
-LDFLAGS =
+LDFLAGS :=
 
 .PHONY: test clean
 
@@ -53,19 +53,19 @@ test: ${TESTS}
 clean:
 	@rm -rf ${BUILD_DIR}/
 
-${TESTS}: ${APP_OBJECTS} ${TEST_OBJECTS}
+${TESTS}: ${LIB_OBJ} ${TEST_OBJ}
 	@mkdir -p ${dir $@}
-	${LD} -o $@ $@.o ${APP_OBJECTS} ${LDFLAGS}
+	${LD} -o $@ $@.o ${LIB_OBJ} ${LDFLAGS}
 
 ${BUILD_DIR}/%.o: %.c Makefile | ${BUILD_DIR}
 	@mkdir -p ${dir $@}
 	${CC} ${CFLAGS} -o $@ -c $<
 
-${BUILD_DIR}/app/%.o: ../src/%.c Makefile | ${BUILD_DIR}
+${BUILD_DIR}/lib/%.o: ../src/%.c Makefile | ${BUILD_DIR}
 	@mkdir -p ${dir $@}
 	${CC} ${CFLAGS} -o $@ -c $<
 
 ${BUILD_DIR}:
 	@mkdir $@
 
--include ${DEPENDENCY_OBJECTS}
+-include ${DEP_FILES}
