@@ -24,11 +24,26 @@ void fatal(const char *fmt, ...)
 	exit(EXIT_FAILURE);
 }
 
+void usage(const char *cmd)
+{
+	fprintf(stderr, "Usage: %s [OPTIONS]\n", cmd);
+	fprintf(stderr, "OPTIONS:\n");
+	fprintf(stderr, " -h              Print this help message and exit\n");
+	fprintf(stderr, " -p <port>       Use <port> as server port\n");
+	fprintf(stderr, " -s              Do not print action logs\n");
+}
+
 int main(int argc, char *argv[])
 {
+	(void)argc;
+
+	const char *cmd = *argv;
+
+	int port = MBTCP_PORT;
+	int silent = 0;
+
 	int ss, s;
 	int is_new_conn;
-	int port = MBTCP_PORT;
 
 	int cs[MAX_NUM_CONNS];
 	size_t ncss = 0u;
@@ -36,18 +51,28 @@ int main(int argc, char *argv[])
 	uint8_t rxbuf[MBADU_TCP_SIZE_MAX], txbuf[MBADU_TCP_SIZE_MAX];
 	ssize_t nrxbuf, ntxbuf;
 
-	if (argc>1) {
-		if (!strcmp(argv[1], "-p")) {
-			if (argc<3) fatal("Option -p must be followed by a number");
-			port = atoi(argv[2]);
+	while (*++argv) {
+		if (!strcmp(*argv, "-h")) {
+			usage(cmd);
+			exit(EXIT_SUCCESS);
+		} else if (!strcmp(*argv, "-p")) {
+			if (!*++argv) {
+				usage(cmd);
+				fatal("Option -p must be followed by a number");
+			}
+			port = atoi(*argv);
+		} else if (!strcmp(*argv, "-s")) {
+			silent = 1;
 		} else {
-			fatal("Unknown option %s", argv[1]);
+			usage(cmd);
+			fatal("Unknown option %s", *argv);
 		}
 	}
 
+	if (!silent) printf("Starting server on port %d.\n", port);
 	ss = server_init(port);
 	if (ss<0) {
-		exit(EXIT_FAILURE);
+		fatal("Failed starting server on port %d", port);
 	}
 
 	modbus_init();
@@ -58,8 +83,10 @@ int main(int argc, char *argv[])
 		if (is_new_conn) {
 			if (ncss<MAX_NUM_CONNS-1) {
 				cs[ncss++] = s;
+				if (!silent) printf("New connection.\n");
 			} else {
 				server_close(s);
+				if (!silent) printf("New connection rejected. Maximum connection (%d) reached.\n", MAX_NUM_CONNS);
 			}
 		} else if (s>0) {
 			nrxbuf = server_recv(s, rxbuf, sizeof rxbuf);
@@ -70,10 +97,12 @@ int main(int argc, char *argv[])
 				} else {
 					/* TODO: Remove from list, and defragment list */
 					server_close(s);
+					if (!silent) printf("Malformed packet received. Closing connection.\n");
 				}
 			} else {
 				/* TODO: Remove from list, and defragment list */
 				server_close(s);
+				if (!silent) printf("Communication problem. Closing connection.\n");
 			}
 		}
 	}
