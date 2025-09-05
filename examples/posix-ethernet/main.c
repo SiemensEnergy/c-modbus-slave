@@ -45,8 +45,8 @@ int main(int argc, char *argv[])
 	int ss, s;
 	int is_new_conn;
 
-	int cs[MAX_NUM_CONNS];
-	size_t ncss = 0u;
+	int cs[MAX_NUM_CONNS] = {0};
+	size_t ncs;
 
 	uint8_t rxbuf[MBADU_TCP_SIZE_MAX], txbuf[MBADU_TCP_SIZE_MAX];
 	ssize_t nrxbuf, ntxbuf;
@@ -78,13 +78,17 @@ int main(int argc, char *argv[])
 	modbus_init();
 
 	while (1) {
-		s = server_poll(ss, cs, ncss, &is_new_conn);
+		s = server_poll(ss, cs, MAX_NUM_CONNS, &is_new_conn);
 
 		if (is_new_conn) {
-			if (ncss<MAX_NUM_CONNS-1) {
-				cs[ncss++] = s;
-				if (!silent) printf("New connection.\n");
-			} else {
+			for (ncs = 0; ncs<MAX_NUM_CONNS; ++ncs) {
+				if (!cs[ncs]) {
+					cs[ncs] = s;
+					if (!silent) printf("New connection.\n");
+					break;
+				}
+			}
+			if (ncs>=MAX_NUM_CONNS) {
 				server_close(s);
 				if (!silent) printf("New connection rejected. Maximum connection (%d) reached.\n", MAX_NUM_CONNS);
 			}
@@ -93,15 +97,25 @@ int main(int argc, char *argv[])
 
 			if (nrxbuf>0) {
 				if ((ntxbuf=mbadu_tcp_handle_req(modbus_get(), rxbuf, (size_t)nrxbuf, txbuf))>0) {
-					server_send(s, txbuf, ntxbuf);
+					(void)server_send(s, txbuf, ntxbuf);
 				} else {
-					/* TODO: Remove from list, and defragment list */
 					server_close(s);
+					for (ncs = 0; ncs<MAX_NUM_CONNS; ++ncs) {
+						if (cs[ncs]==s) {
+							cs[ncs] = 0;
+							break;
+						}
+					}
 					if (!silent) printf("Malformed packet received. Closing connection.\n");
 				}
 			} else {
-				/* TODO: Remove from list, and defragment list */
 				server_close(s);
+				for (ncs = 0; ncs<MAX_NUM_CONNS; ++ncs) {
+					if (cs[ncs]==s) {
+						cs[ncs] = 0;
+						break;
+					}
+				}
 				if (!silent) printf("Communication problem. Closing connection.\n");
 			}
 		}
