@@ -5,13 +5,30 @@
 
 #include <stdint.h>
 #include <stdlib.h>
+#include <string.h>
+#include <stdio.h>
+#include <stdarg.h>
 
 enum {MAX_NUM_CONNS=4};
 
-int main(void)
+void fatal(const char *fmt, ...)
+{
+	va_list args;
+
+	fprintf(stderr, "Error: ");
+
+	va_start(args, fmt);
+	vfprintf(stderr, fmt, args);
+	va_end(args);
+
+	exit(EXIT_FAILURE);
+}
+
+int main(int argc, char *argv[])
 {
 	int ss, s;
 	int is_new_conn;
+	int port = MBTCP_PORT;
 
 	int cs[MAX_NUM_CONNS];
 	size_t ncss = 0u;
@@ -19,7 +36,16 @@ int main(void)
 	uint8_t rxbuf[MBADU_TCP_SIZE_MAX], txbuf[MBADU_TCP_SIZE_MAX];
 	ssize_t nrxbuf, ntxbuf;
 
-	ss = server_init(MBTCP_PORT);
+	if (argc>1) {
+		if (!strcmp(argv[1], "-p")) {
+			if (argc<3) fatal("Option -p must be followed by a number");
+			port = atoi(argv[2]);
+		} else {
+			fatal("Unknown option %s", argv[1]);
+		}
+	}
+
+	ss = server_init(port);
 	if (ss<0) {
 		exit(EXIT_FAILURE);
 	}
