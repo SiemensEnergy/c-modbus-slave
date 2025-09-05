@@ -47,7 +47,7 @@ analyze:
 		echo "Analyzing $$src..."; \
 		output=$$(${CLANG} --analyze \
 			-Xanalyzer -analyzer-output=text \
-			$$src 2>&1); \
+			${SRC_DIR}/$$src 2>&1); \
 		if [ -n "$$output" ]; then \
 			echo "$$output"; \
 			exit 1; \
