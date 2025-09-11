@@ -45,7 +45,7 @@ extern void mbrtu_proc(void)
 		s_rx[s_rx_n++] = (uint8_t)Serial.read();
 		s_last_recv_us = micros();
 	} else if (s_rx_n && (micros()-s_last_recv_us) >= s_break_us) { /* Check for frame completion (no data for break time) */
-		tx_n = mbadu_handle_req(mbinst_get(), s_rx, s_rx_n, s_tx);
+		tx_n = mbadu_handle_req(modbus_get(), s_rx, s_rx_n, s_tx);
 
 		if (tx_n) {
 			Serial.write(s_tx, tx_n); /* Send response */

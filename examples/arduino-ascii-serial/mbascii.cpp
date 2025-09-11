@@ -43,7 +43,7 @@ extern void mbascii_proc(void)
 		s_rx[s_rx_n++] = (uint8_t)Serial.read();
 		s_last_recv_ms = millis();
 
-		inst = mbinst_get();
+		inst = modbus_get();
 		if (s_rx_n>MBADU_ASCII_HEADER_SIZE
 				&& s_rx[s_rx_n-2]=='\r'
 				&& s_rx[s_rx_n-1]==inst->state.ascii_delimiter) { /* Full request received */

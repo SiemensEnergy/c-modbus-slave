@@ -113,7 +113,7 @@ extern void modbus_init(void)
 	mbinst_init(&s_mbinst); /* Initialize internal instance state */
 }
 
-extern struct mbinst_s *mbinst_get(void)
+extern struct mbinst_s *modbus_get(void)
 {
 	return &s_mbinst;
 }
