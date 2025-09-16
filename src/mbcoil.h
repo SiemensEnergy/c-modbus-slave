@@ -226,7 +226,7 @@ enum {
 	MBCOIL_READ_OFF=0,
 	MBCOIL_READ_ON=1,
 	MBCOIL_READ_LOCKED, /* Coil is locked */
-	MBCOIL_READ_NO_ACCESS, /* No access method present */
+	MBCOIL_READ_NO_ACCESS, /* No read access method present */
 	MBCOIL_READ_DEV_FAIL, /* Invalid coil descriptor configuration */
 };
 
@@ -258,7 +258,11 @@ extern const struct mbcoil_desc_s *mbcoil_find_desc(
  *
  * @param coil Pointer to the coil descriptor
  *
- * @return enum mbcoil_read_result_e
+ * @retval MBCOIL_READ_OFF (0)
+ * @retval MBCOIL_READ_ON (1)
+ * @retval MBCOIL_READ_LOCKED Coil is locked
+ * @retval MBCOIL_READ_NO_ACCESS No read access method present
+ * @retval MBCOIL_READ_DEV_FAIL Invalid coil descriptor configuration
  *
  * @note For pointer access, uses the bit index to extract the correct bit
  * @note For function access, calls the read function and returns its result (Normalized)
