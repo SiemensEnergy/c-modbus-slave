@@ -154,6 +154,86 @@ extern const struct mbreg_desc_s *mbreg_find_desc(
 }
 
 /**
+ * @brief Check if register is configure correctly for reading from pointer
+ */
+static int read_ptr_ok(const struct mbreg_desc_s *reg)
+{
+	switch (reg->type & MRTYPE_MASK) {
+	case MRTYPE_U8: return !!reg->read.pu8;
+	case MRTYPE_U16: return !!reg->read.pu16;
+	case MRTYPE_U32: return !!reg->read.pu32;
+	case MRTYPE_U64: return !!reg->read.pu64;
+	case MRTYPE_I8: return !!reg->read.pi8;
+	case MRTYPE_I16: return !!reg->read.pi16;
+	case MRTYPE_I32: return !!reg->read.pi32;
+	case MRTYPE_I64: return !!reg->read.pi64;
+	case MRTYPE_F32: return !!reg->read.pf32;
+	case MRTYPE_F64: return !!reg->read.pf64;
+	default: return 0;
+	}
+}
+
+/**
+ * @brief Check if register is configure correctly for reading from function
+ */
+static int read_fn_ok(const struct mbreg_desc_s *reg)
+{
+	switch (reg->type & MRTYPE_MASK) {
+	case MRTYPE_U8: return !!reg->read.fu8;
+	case MRTYPE_U16: return !!reg->read.fu16;
+	case MRTYPE_U32: return !!reg->read.fu32;
+	case MRTYPE_U64: return !!reg->read.fu64;
+	case MRTYPE_I8: return !!reg->read.fi8;
+	case MRTYPE_I16: return !!reg->read.fi16;
+	case MRTYPE_I32: return !!reg->read.fi32;
+	case MRTYPE_I64: return !!reg->read.fi64;
+	case MRTYPE_F32: return !!reg->read.ff32;
+	case MRTYPE_F64: return !!reg->read.ff64;
+	default: return 0;
+	}
+}
+
+/**
+ * @brief Check if register is configure correctly for writing to pointer
+ */
+static int write_ptr_ok(const struct mbreg_desc_s *reg)
+{
+	switch (reg->type & MRTYPE_MASK) {
+	case MRTYPE_U8: return !!reg->write.pu8;
+	case MRTYPE_U16: return !!reg->write.pu16;
+	case MRTYPE_U32: return !!reg->write.pu32;
+	case MRTYPE_U64: return !!reg->write.pu64;
+	case MRTYPE_I8: return !!reg->write.pi8;
+	case MRTYPE_I16: return !!reg->write.pi16;
+	case MRTYPE_I32: return !!reg->write.pi32;
+	case MRTYPE_I64: return !!reg->write.pi64;
+	case MRTYPE_F32: return !!reg->write.pf32;
+	case MRTYPE_F64: return !!reg->write.pf64;
+	default: return 0;
+	}
+}
+
+/**
+ * @brief Check if register is configure correctly for writing to function
+ */
+static int write_fn_ok(const struct mbreg_desc_s *reg)
+{
+	switch (reg->type & MRTYPE_MASK) {
+	case MRTYPE_U8: return !!reg->write.fu8;
+	case MRTYPE_U16: return !!reg->write.fu16;
+	case MRTYPE_U32: return !!reg->write.fu32;
+	case MRTYPE_U64: return !!reg->write.fu64;
+	case MRTYPE_I8: return !!reg->write.fi8;
+	case MRTYPE_I16: return !!reg->write.fi16;
+	case MRTYPE_I32: return !!reg->write.fi32;
+	case MRTYPE_I64: return !!reg->write.fi64;
+	case MRTYPE_F32: return !!reg->write.ff32;
+	case MRTYPE_F64: return !!reg->write.ff64;
+	default: return 0;
+	}
+}
+
+/**
  * @return n 16-bit registers read
  */
 static int read_val(const struct mbreg_desc_s *reg, uint8_t *res)
@@ -180,6 +260,8 @@ static int read_val(const struct mbreg_desc_s *reg, uint8_t *res)
  */
 static int read_ptr(const struct mbreg_desc_s *reg, uint8_t *res)
 {
+	if (!read_ptr_ok(reg)) return 0;
+
 	switch (reg->type & MRTYPE_MASK) {
 	case MRTYPE_U8: u16tobe((uint16_t)*reg->read.pu8, res); break;
 	case MRTYPE_U16: u16tobe(*reg->read.pu16, res); break;
@@ -204,6 +286,8 @@ static int read_block(const struct mbreg_desc_s *reg, uint16_t addr, uint8_t *re
 {
 	size_t reg_size_w, ix;
 	uint16_t start_addr;
+
+	if (!read_ptr_ok(reg)) return 0;
 
 	reg_size_w = mbreg_size(reg) / 2;
 	ix = (addr - reg->address) / reg_size_w;
@@ -235,6 +319,8 @@ static int read_block(const struct mbreg_desc_s *reg, uint16_t addr, uint8_t *re
  */
 static int read_fn(const struct mbreg_desc_s *reg, uint8_t *res)
 {
+	if (!read_fn_ok(reg)) return 0;
+
 	switch (reg->type & MRTYPE_MASK) {
 	case MRTYPE_U8: u16tobe((uint16_t)reg->read.fu8(), res); break;
 	case MRTYPE_U16: u16tobe(reg->read.fu16(), res); break;
@@ -421,6 +507,8 @@ static enum mbstatus_e write_ptr(
 	const struct mbreg_desc_s *reg,
 	const uint8_t *val)
 {
+	if (!write_ptr_ok(reg)) return MB_DEV_FAIL;
+
 	switch (reg->type & MRTYPE_MASK) {
 	case MRTYPE_U8: *reg->write.pu8 = (uint8_t)betou16(val); break;
 	case MRTYPE_U16: *reg->write.pu16 = betou16(val); break;
@@ -450,6 +538,8 @@ static enum mbstatus_e write_ptr_partial(
 {
 	uint8_t buf[MRTYPE_SIZE_MAX/8];
 	size_t reg_size, buf_offset, n_copy;
+
+	if (!write_ptr_ok(reg)) return MB_DEV_FAIL;
 
 	reg_size = mbreg_size(reg);
 
@@ -566,6 +656,8 @@ static enum mbstatus_e write_fn(
 	const struct mbreg_desc_s *reg,
 	const uint8_t *val)
 {
+	if (!write_fn_ok(reg)) return MB_DEV_FAIL;
+
 	switch (reg->type & MRTYPE_MASK) {
 	case MRTYPE_U8: return reg->write.fu8((uint8_t)betou16(val));
 	case MRTYPE_U16: return reg->write.fu16(betou16(val));

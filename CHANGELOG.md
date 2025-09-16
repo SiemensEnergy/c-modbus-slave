@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - Added support for register block access of 8-bit values
+- Improve runtime validation for incorrect register descriptor configuration
 
 ## [1.1.0] - 2025-09-03
 
