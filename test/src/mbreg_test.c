@@ -222,7 +222,7 @@ TEST(mbreg_read_locked_fails)
 	uint8_t res[MBPDU_DATA_SIZE_MAX];
 
 	size_t result = mbreg_read(&reg, 0x0000, 1u, res, 0);
-	ASSERT(result == 0);
+	ASSERT_EQ(MBREG_READ_LOCKED, result);
 }
 
 TEST(mbreg_write_locked_fails)

@@ -79,11 +79,14 @@ static enum mbstatus_e read_regs(
 				n_req_regs-reg_offs,
 				res ? (res->p + res->size) : NULL,
 				inst->swap_words && !is_hold_reg);
-			if (n_read_regs==0u) {
+			if (n_read_regs==MBREG_READ_DEV_FAIL) {
+				return MB_DEV_FAIL;
+			} else if (n_read_regs==MBREG_READ_LOCKED) {
 				return MB_ILLEGAL_DATA_ADDR;
+			} else if (n_read_regs!=MBREG_READ_NO_ACCESS) {
+				if (res) res->size += n_read_regs*2;
 			}
 
-			if (res) res->size += n_read_regs*2;
 			reg_offs += n_read_regs;
 		} else {
 			if (res) {

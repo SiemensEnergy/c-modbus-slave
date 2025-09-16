@@ -50,7 +50,6 @@ extern enum mbstatus_e mbfn_read_coils(
 	uint16_t start_addr, quantity, addr;
 	uint8_t byte_count;
 	size_t i;
-	int value;
 	const struct mbcoil_desc_s *coil;
 
 	if (!inst || !coils || !req || !res) {
@@ -90,12 +89,15 @@ extern enum mbstatus_e mbfn_read_coils(
 	for (i=0; i<quantity; ++i) {
 		addr = start_addr + i;
 		if ((coil = mbcoil_find_desc(coils, n_coils, addr))) {
-			if ((value = mbcoil_read(coil)) == -1) {
-				return MB_ILLEGAL_DATA_ADDR;
-			}
-
-			if (value) {
+			switch (mbcoil_read(coil)) {
+			case MBCOIL_READ_OFF: break;
+			case MBCOIL_READ_ON:
 				res->p[2 + i/8] |= (1<<(i%8));
+				break;
+			case MBCOIL_READ_LOCKED: return MB_ILLEGAL_DATA_ADDR;
+			case MBCOIL_READ_NO_ACCESS: break; /* Leave coils without read access as 0 */
+			case MBCOIL_READ_DEV_FAIL: return MB_DEV_FAIL;
+			default: return MB_DEV_FAIL;
 			}
 		}
 		/* If coil doesn't exist, it's left as 0 (already cleared above) */
