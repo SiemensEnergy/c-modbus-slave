@@ -1310,6 +1310,221 @@ TEST(mbpdu_block_register_out_of_bounds)
 	ASSERT_EQ(MB_ILLEGAL_DATA_ADDR, res[1]);
 }
 
+TEST(mbpdu_block_read_u8_works)
+{
+	uint8_t block_data[5] = {0x12, 0x34, 0x56, 0x78, 0x9A};
+	const struct mbreg_desc_s regs[] = {
+		{
+			.address=0x1000,
+			.type=MRTYPE_U8 | MRTYPE_BLOCK,
+			.access=MRACC_R_PTR,
+			.read={.pu8=block_data},
+			.n_block_entries=5 /* block has 5 entries: 0x1000-0x1004 */
+		}
+	};
+	struct mbinst_s inst = {
+		.hold_regs=regs,
+		.n_hold_regs=sizeof regs / sizeof regs[0]
+	};
+	mbinst_init(&inst);
+
+	uint8_t pdu_data[] = {
+		MBFC_READ_HOLDING_REGS,
+		0x10, 0x00, /* Start addr */
+		0x00, 0x05, /* Quantity register */
+	};
+
+	uint8_t res[MBPDU_SIZE_MAX];
+	size_t res_size = mbpdu_handle_req(&inst, pdu_data, sizeof pdu_data, res);
+
+	ASSERT(!(res[0] & MB_ERR_FLG));
+	ASSERT_EQ(12, res_size); /* fc + byte count + 5 regs */
+	ASSERT_EQ(10, res[1]); /* byte count (5 regs) */
+	ASSERT_EQ(0x12, betou16(res+2));
+	ASSERT_EQ(0x34, betou16(res+4));
+	ASSERT_EQ(0x56, betou16(res+6));
+	ASSERT_EQ(0x78, betou16(res+8));
+	ASSERT_EQ(0x9A, betou16(res+10));
+}
+
+TEST(mbpdu_block_write_u8_works)
+{
+	uint8_t block_data[5] = {0x12, 0x34, 0x56, 0x78, 0x9A};
+	const struct mbreg_desc_s regs[] = {
+		{
+			.address=0x1000,
+			.type=MRTYPE_U8 | MRTYPE_BLOCK,
+			.access=MRACC_RW_PTR,
+			.read={.pu8=block_data},
+			.write={.pu8=block_data},
+			.n_block_entries=5 /* block has 5 entries: 0x1000-0x1004 */
+		}
+	};
+	struct mbinst_s inst = {
+		.hold_regs=regs,
+		.n_hold_regs=sizeof regs / sizeof regs[0]
+	};
+	mbinst_init(&inst);
+
+	uint8_t pdu_data[] = {
+		MBFC_WRITE_MULTIPLE_REGS,
+		0x10, 0x00, /* Start addr */
+		0x00, 0x03, /* n regs to write */
+		0x06, /* Byte count */
+		0x00, 0xFE, /* Reg 0x1000 */
+		0x00, 0xDC, /* Reg 0x1001 */
+		0x00, 0xBA, /* Reg 0x1002 */
+	};
+
+	uint8_t res[MBPDU_SIZE_MAX];
+	size_t res_size = mbpdu_handle_req(&inst, pdu_data, sizeof pdu_data, res);
+
+	ASSERT_EQ(5u, res_size);
+	ASSERT(!(res[0] & MB_ERR_FLG));
+	ASSERT_EQ(0x10, res[1]) /* Start addr H */
+	ASSERT_EQ(0x00, res[2]) /* Start addr L */
+	ASSERT_EQ(0x00, res[3]) /* n regs to write H */
+	ASSERT_EQ(0x03, res[4]) /* n regs to write L */
+
+	ASSERT_EQ(0xFE, block_data[0]);
+	ASSERT_EQ(0xDC, block_data[1]);
+	ASSERT_EQ(0xBA, block_data[2]);
+	ASSERT_EQ(0x78, block_data[3]); /* Not changed */
+	ASSERT_EQ(0x9A, block_data[4]); /* Not changed */
+}
+
+TEST(mbpdu_block_write_u8_upper_byte_ignored)
+{
+	uint8_t block_data[5] = {0x12, 0x34, 0x56, 0x78, 0x9A};
+	const struct mbreg_desc_s regs[] = {
+		{
+			.address=0x1000,
+			.type=MRTYPE_U8 | MRTYPE_BLOCK,
+			.access=MRACC_RW_PTR,
+			.read={.pu8=block_data},
+			.write={.pu8=block_data},
+			.n_block_entries=5 /* block has 5 entries: 0x1000-0x1004 */
+		}
+	};
+	struct mbinst_s inst = {
+		.hold_regs=regs,
+		.n_hold_regs=sizeof regs / sizeof regs[0]
+	};
+	mbinst_init(&inst);
+
+	uint8_t pdu_data[] = {
+		MBFC_WRITE_MULTIPLE_REGS,
+		0x10, 0x00, /* Start addr */
+		0x00, 0x03, /* n regs to write */
+		0x06, /* Byte count */
+		0x12, /*< Ignored */ 0xFE, /* Reg 0x1000 */
+		0x21, /*< Ignored */ 0xDC, /* Reg 0x1001 */
+		0x43, /*< Ignored */ 0xBA, /* Reg 0x1002 */
+	};
+
+	uint8_t res[MBPDU_SIZE_MAX];
+	size_t res_size = mbpdu_handle_req(&inst, pdu_data, sizeof pdu_data, res);
+
+	ASSERT_EQ(5u, res_size);
+	ASSERT(!(res[0] & MB_ERR_FLG));
+	ASSERT_EQ(0x10, res[1]) /* Start addr H */
+	ASSERT_EQ(0x00, res[2]) /* Start addr L */
+	ASSERT_EQ(0x00, res[3]) /* n regs to write H */
+	ASSERT_EQ(0x03, res[4]) /* n regs to write L */
+
+	ASSERT_EQ(0xFE, block_data[0]);
+	ASSERT_EQ(0xDC, block_data[1]);
+	ASSERT_EQ(0xBA, block_data[2]);
+	ASSERT_EQ(0x78, block_data[3]); /* Not changed */
+	ASSERT_EQ(0x9A, block_data[4]); /* Not changed */
+}
+
+TEST(mbpdu_block_read_i8_works)
+{
+	int8_t block_data[5] = {13, 127, -123, -43, 43};
+	const struct mbreg_desc_s regs[] = {
+		{
+			.address=0x1000,
+			.type=MRTYPE_I8 | MRTYPE_BLOCK,
+			.access=MRACC_R_PTR,
+			.read={.pi8=block_data},
+			.n_block_entries=5 /* block has 5 entries: 0x1000-0x1004 */
+		}
+	};
+	struct mbinst_s inst = {
+		.hold_regs=regs,
+		.n_hold_regs=sizeof regs / sizeof regs[0]
+	};
+	mbinst_init(&inst);
+
+	uint8_t pdu_data[] = {
+		MBFC_READ_HOLDING_REGS,
+		0x10, 0x00, /* Start addr */
+		0x00, 0x05, /* Quantity register */
+	};
+
+	uint8_t res[MBPDU_SIZE_MAX];
+	size_t res_size = mbpdu_handle_req(&inst, pdu_data, sizeof pdu_data, res);
+
+	ASSERT(!(res[0] & MB_ERR_FLG));
+	ASSERT_EQ(12, res_size); /* fc + byte count + 5 regs */
+	ASSERT_EQ(10, res[1]); /* byte count (5 regs) */
+	ASSERT_EQ(13, betoi16(res+2));
+	ASSERT_EQ(127, betoi16(res+4));
+	ASSERT_EQ(-123, betoi16(res+6));
+	ASSERT_EQ(-43, betoi16(res+8));
+	ASSERT_EQ(43, betoi16(res+10));
+}
+
+TEST(mbpdu_block_write_i8_works)
+{
+	int8_t block_data[5] = {13, 127, -123, -43, 43};
+	const struct mbreg_desc_s regs[] = {
+		{
+			.address=0x1000,
+			.type=MRTYPE_U8 | MRTYPE_BLOCK,
+			.access=MRACC_RW_PTR,
+			.read={.pi8=block_data},
+			.write={.pi8=block_data},
+			.n_block_entries=5 /* block has 5 entries: 0x1000-0x1004 */
+		}
+	};
+	struct mbinst_s inst = {
+		.hold_regs=regs,
+		.n_hold_regs=sizeof regs / sizeof regs[0]
+	};
+	mbinst_init(&inst);
+
+	uint8_t pdu_data[] = {
+		MBFC_WRITE_MULTIPLE_REGS,
+		0x10, 0x00, /* Start addr */
+		0x00, 0x03, /* n regs to write */
+		0x06, /* Byte count */
+		0x00, 0x00, /* Reg 0x1000 (Placeholder) */
+		0x00, 0x00, /* Reg 0x1001 (Placeholder) */
+		0x00, 0x00, /* Reg 0x1002 (Placeholder) */
+	};
+	i16tobe(-122, pdu_data+6);
+	i16tobe(122, pdu_data+8);
+	i16tobe(-42, pdu_data+10);
+
+	uint8_t res[MBPDU_SIZE_MAX];
+	size_t res_size = mbpdu_handle_req(&inst, pdu_data, sizeof pdu_data, res);
+
+	ASSERT_EQ(5u, res_size);
+	ASSERT(!(res[0] & MB_ERR_FLG));
+	ASSERT_EQ(0x10, res[1]) /* Start addr H */
+	ASSERT_EQ(0x00, res[2]) /* Start addr L */
+	ASSERT_EQ(0x00, res[3]) /* n regs to write H */
+	ASSERT_EQ(0x03, res[4]) /* n regs to write L */
+
+	ASSERT_EQ(-122, (int)block_data[0]);
+	ASSERT_EQ(122, (int)block_data[1]);
+	ASSERT_EQ(-42, (int)block_data[2]);
+	ASSERT_EQ(-43, (int)block_data[3]); /* Not changed */
+	ASSERT_EQ(43, (int)block_data[4]); /* Not changed */
+}
+
 static int s_custom_handler_called = 0;
 static uint8_t s_last_custom_fc = 0;
 static enum mbstatus_e custom_function_handler(
@@ -2225,6 +2440,11 @@ TEST_MAIN(
 	mbpdu_block_read_beyond_end_fails,
 	mbpdu_block_write_works,
 	mbpdu_block_register_out_of_bounds,
+	mbpdu_block_read_u8_works,
+	mbpdu_block_write_u8_works,
+	mbpdu_block_write_u8_upper_byte_ignored,
+	mbpdu_block_read_i8_works,
+	mbpdu_block_write_i8_works,
 	mbpdu_custom_function_handler_works,
 	mbpdu_custom_handler_fallback_for_standard_functions,
 	mbpdu_word_order_swap_u32_works,
