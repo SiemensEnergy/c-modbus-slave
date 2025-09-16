@@ -7,7 +7,7 @@
 TEST(mbcoil_null_coil_read_fails)
 {
 	int result = mbcoil_read(NULL);
-	ASSERT_EQ(-1, result);
+	ASSERT_EQ(MBCOIL_READ_DEV_FAIL, result);
 }
 
 TEST(mbcoil_null_coil_write_fails)
@@ -32,7 +32,7 @@ TEST(mbcoil_invalid_access_read_fails)
 	};
 
 	int val = mbcoil_read(&coil);
-	ASSERT_EQ(-1, val);
+	ASSERT_EQ(MBCOIL_READ_NO_ACCESS, val);
 }
 
 TEST(mbcoil_invalid_access_write_fails)
@@ -57,7 +57,7 @@ TEST(mbcoil_null_ptr_read_fails)
 	};
 
 	int val = mbcoil_read(&coil);
-	ASSERT_EQ(-1, val);
+	ASSERT_EQ(MBCOIL_READ_DEV_FAIL, val);
 }
 
 TEST(mbcoil_null_ptr_write_fails)
@@ -81,7 +81,7 @@ TEST(mbcoil_null_fn_read_fails)
 	};
 
 	int val = mbcoil_read(&coil);
-	ASSERT_EQ(-1, val);
+	ASSERT_EQ(MBCOIL_READ_DEV_FAIL, val);
 }
 
 TEST(mbcoil_null_fn_write_fails)
@@ -110,7 +110,7 @@ TEST(mbcoil_read_locked_fails)
 	};
 
 	int val = mbcoil_read(&coil);
-	ASSERT_EQ(-1, val);
+	ASSERT_EQ(MBCOIL_READ_LOCKED, val);
 }
 
 TEST(mbcoil_write_locked_fails)

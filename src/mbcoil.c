@@ -75,11 +75,11 @@ extern const struct mbcoil_desc_s *mbcoil_find_desc(
 
 extern int mbcoil_read(const struct mbcoil_desc_s *coil)
 {
-	if (!coil) return -1;
+	if (!coil) return MBCOIL_READ_DEV_FAIL;
 
 	/* Check read permissions */
 	if (coil->rlock_cb && coil->rlock_cb()) {
-		return -1;
+		return MBCOIL_READ_LOCKED;
 	}
 
 	switch (coil->access & MCACC_R_MASK) {
@@ -88,13 +88,13 @@ extern int mbcoil_read(const struct mbcoil_desc_s *coil)
 	case MCACC_R_PTR:
 		return (coil->read.ptr && coil->read.ix<8)
 			? !!((*coil->read.ptr) & (1<<coil->read.ix))
-			: -1;
+			: MBCOIL_READ_DEV_FAIL;
 	case MCACC_R_FN:
 		return coil->read.fn
 			? !!coil->read.fn()
-			: -1;
+			: MBCOIL_READ_DEV_FAIL;
 	default:
-		return -1;
+		return MBCOIL_READ_NO_ACCESS;
 	}
 }
 
