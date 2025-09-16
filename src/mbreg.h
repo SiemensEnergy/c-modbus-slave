@@ -68,7 +68,7 @@ enum mbreg_type_e {
 	 * enables array-style access where consecutive addresses map to
 	 * consecutive array elements.
 	 *
-	 * @note Does NOT support 8-bit values (U8/I8) in block mode
+	 * @note 7-bit values are handled as one per 16-bit register
 	 * @note Use n_block_entries to specify array size
 	 */
 	MRTYPE_BLOCK = 512,

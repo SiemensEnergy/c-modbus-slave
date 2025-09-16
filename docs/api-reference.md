@@ -97,6 +97,8 @@ Enum `enum mbstatus_e` can be found in `mbdef.h`.
 | `MRTYPE_F32/F64`        | Floating point    | 2/4              |
 | `MRTYPE_BLOCK`          | Array with offset | Variable         |
 
+For `MRTYPE_BLOCK` with (`MRTYPE_U8` and `MRTYPE_I8`) one register per entry will be used. E.g. `uint8_t reg[4]` will take 4 16-bit registers. The value will simply be cast to a 16-bit value.
+
 > [!Note]
 > Multi-register types (U32, U64, F32, F64) use big-endian word order as per Modbus specification, unless `mbinst_s::swap_words` is set (applies only to input registers).
 

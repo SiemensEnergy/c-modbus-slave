@@ -214,11 +214,11 @@ static int read_block(const struct mbreg_desc_s *reg, uint16_t addr, uint8_t *re
 	}
 
 	switch (reg->type & MRTYPE_MASK) {
-	/*case MRTYPE_U8:*/ /* Not supported */
+	case MRTYPE_U8: u16tobe((uint16_t)*(reg->read.pu8 + ix), res); break;
 	case MRTYPE_U16: u16tobe(*(reg->read.pu16 + ix), res); break;
 	case MRTYPE_U32: u32tobe(*(reg->read.pu32 + ix), res); break;
 	case MRTYPE_U64: u64tobe(*(reg->read.pu64 + ix), res); break;
-	/*case MRTYPE_I8:*/ /* Not supported */
+	case MRTYPE_I8: i16tobe((int16_t)*(reg->read.pi8 + ix), res); break;
 	case MRTYPE_I16: i16tobe(*(reg->read.pi16 + ix), res); break;
 	case MRTYPE_I32: i32tobe(*(reg->read.pi32 + ix), res); break;
 	case MRTYPE_I64: i64tobe(*(reg->read.pi64 + ix), res); break;
@@ -494,11 +494,11 @@ static enum mbstatus_e write_block(
 	size_t ix = (addr - reg->address) / (mbreg_size(reg) / 2);
 
 	switch (reg->type & MRTYPE_MASK) {
-	/*case MRTYPE_U8:*/ /* Not supported */
+	case MRTYPE_U8: *(reg->write.pu8 + ix) = (uint8_t)betoi16(val); break;
 	case MRTYPE_U16: *(reg->write.pu16 + ix) = betou16(val); break;
 	case MRTYPE_U32: *(reg->write.pu32 + ix) = betou32(val); break;
 	case MRTYPE_U64: *(reg->write.pu64 + ix) = betou64(val); break;
-	/*case MRTYPE_I8:*/ /* Not supported */
+	case MRTYPE_I8: *(reg->write.pi8 + ix) = (int8_t)betoi16(val); break;
 	case MRTYPE_I16: *(reg->write.pi16 + ix) = betoi16(val); break;
 	case MRTYPE_I32: *(reg->write.pi32 + ix) = betoi32(val); break;
 	case MRTYPE_I64: *(reg->write.pi64 + ix) = betoi64(val); break;
@@ -535,11 +535,11 @@ static enum mbstatus_e write_block_partial(
 
 	/* Read the current value into a buffer */
 	switch (reg->type & MRTYPE_MASK) {
-	/*case MRTYPE_U8:*/ /* Not supported */
+	case MRTYPE_U8: u16tobe((uint16_t)*(reg->write.pu8 + ix), buf); break;
 	case MRTYPE_U16: u16tobe(*(reg->write.pu16 + ix), buf); break;
 	case MRTYPE_U32: u32tobe(*(reg->write.pu32 + ix), buf); break;
 	case MRTYPE_U64: u64tobe(*(reg->write.pu64 + ix), buf); break;
-	/*case MRTYPE_I8:*/ /* Not supported */
+	case MRTYPE_I8: i16tobe((int16_t)*(reg->write.pi8 + ix), buf); break;
 	case MRTYPE_I16: i16tobe(*(reg->write.pi16 + ix), buf); break;
 	case MRTYPE_I32: i32tobe(*(reg->write.pi32 + ix), buf); break;
 	case MRTYPE_I64: i64tobe(*(reg->write.pi64 + ix), buf); break;
