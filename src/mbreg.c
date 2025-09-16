@@ -339,7 +339,8 @@ static int read_fn(const struct mbreg_desc_s *reg, uint8_t *res)
 }
 
 /**
- * @return n 16-bit registers read
+ * @retval Number of 16-bit words actually read
+ * @retval MBREG_READ_DEV_FAIL (SIZE_MAX) Device fault
  */
 static size_t read_partial(
 	const struct mbreg_desc_s *reg,
@@ -358,18 +359,18 @@ static size_t read_partial(
 		ok=read_block(reg, addr, buf);
 	} else {
 		if (((addr - reg->address)*2u) >= reg_size) {
-			return 0u;
+			return MBREG_READ_DEV_FAIL;
 		}
 
 		switch (reg->access & MRACC_R_MASK) {
 		case MRACC_R_VAL: ok=read_val(reg, buf); break;
 		case MRACC_R_PTR: ok=read_ptr(reg, buf); break;
 		case MRACC_R_FN: ok=read_fn(reg, buf); break;
-		default: return 0;
+		default: return MBREG_READ_DEV_FAIL;
 		}
 	}
 
-	if (!ok) return 0u;
+	if (!ok) return MBREG_READ_DEV_FAIL;
 
 	if (swap_words) {
 		switch (reg_size) {
@@ -389,9 +390,6 @@ static size_t read_partial(
 	return n_copy / 2;
 }
 
-/**
- * @return n 16-bit registers read
- */
 static int read_full(
 	const struct mbreg_desc_s *reg,
 	uint16_t addr,
@@ -433,21 +431,21 @@ extern size_t mbreg_read(
 {
 	size_t reg_size_w;
 
-	if (!reg) return 0u;
-	if (n_remaining_regs == 0u) return 0u;
-	if (addr < reg->address) return 0u;
+	if (!reg) return MBREG_READ_DEV_FAIL;
+	if (n_remaining_regs == 0u) return MBREG_READ_DEV_FAIL;
+	if (addr < reg->address) return MBREG_READ_DEV_FAIL;
 
-	if (!(reg->access & MRACC_R_MASK)) return 0u; /* Check if read is allowed */
-	if (reg->rlock_cb && reg->rlock_cb()) return 0u; /* Check if read locked */
+	if (!(reg->access & MRACC_R_MASK)) return MBREG_READ_NO_ACCESS; /* Check if read is allowed */
+	if (reg->rlock_cb && reg->rlock_cb()) return MBREG_READ_LOCKED; /* Check if read locked */
 
 	reg_size_w = mbreg_size(reg) / 2;
-	if (reg_size_w == 0u) return 0u;
+	if (reg_size_w == 0u) return MBREG_READ_DEV_FAIL;
 
 	if (n_remaining_regs < reg_size_w || (addr - reg->address) % reg_size_w) {
 		return read_partial(reg, addr, n_remaining_regs, res, swap_words);
 	} else {
 		if (res) { /* Not dry run */
-			if (!read_full(reg, addr, res, swap_words)) return 0u;
+			if (!read_full(reg, addr, res, swap_words)) return MBREG_READ_DEV_FAIL;
 		}
 		return reg_size_w;
 	}

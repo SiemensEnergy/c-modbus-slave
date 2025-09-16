@@ -300,6 +300,11 @@ struct mbreg_desc_s {
 	void (*post_write_cb)(void);
 };
 
+/** @brief Only for internal use */
+#define MBREG_READ_NO_ACCESS 0 /* No read access method present */
+#define MBREG_READ_LOCKED (SIZE_MAX-1) /* Register is locked */
+#define MBREG_READ_DEV_FAIL SIZE_MAX /* Invalid coil descriptor configuration */
+
 /**
  * @brief Get size of Modbus register in bytes
  *
@@ -349,7 +354,10 @@ extern const struct mbreg_desc_s *mbreg_find_desc(
  * @param res Pointer to buffer where read data will be stored (big-endian). If NULL, dry run (Check read allowed)
  * @param swap_words If non-zero, swaps word order for multi-word values (U32, U64, F32, F64)
  *
- * @return Number of 16-bit words actually read, or 0 on error
+ * @retval Number of 16-bit words actually read
+ * @retval MBREG_READ_NO_ACCESS (0) No read access method (Ignored when reading)
+ * @retval MBREG_READ_LOCKED (SIZE_MAX-1) Register read locked
+ * @retval MBREG_READ_DEV_FAIL (SIZE_MAX) Device fault
  *
  * @note Data is returned in big-endian format as per Modbus specification
  * @note For block registers, calculates the correct array index automatically

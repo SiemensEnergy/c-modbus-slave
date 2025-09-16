@@ -9,7 +9,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
-- Improved reporting of device faults in Coil handling
+- Improved reporting of device faults in coil handling
+- Improved reporting of device faults in register handling
 
 ## [1.2.0] - 2025-09-16
 
