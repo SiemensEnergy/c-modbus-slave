@@ -32,27 +32,28 @@
 
 extern uint16_t betou16(const uint8_t *buf)
 {
-	return (uint16_t)buf[0] << 8 | (uint16_t)buf[1];
+	return ((uint16_t)buf[0] << 8)
+		| ((uint16_t)buf[1]);
 }
 
 extern uint32_t betou32(const uint8_t *buf)
 {
-	return (uint32_t)buf[0] << 24
-		| (uint32_t)buf[1] << 16
-		| (uint32_t)buf[2] << 8
-		| (uint32_t)buf[3];
+	return ((uint32_t)buf[0] << 24)
+		| ((uint32_t)buf[1] << 16)
+		| ((uint32_t)buf[2] << 8)
+		| ((uint32_t)buf[3]);
 }
 
 extern uint64_t betou64(const uint8_t *buf)
 {
-	return (uint64_t)buf[0] << 56
-		| (uint64_t)buf[1] << 48
-		| (uint64_t)buf[2] << 40
-		| (uint64_t)buf[3] << 32
-		| (uint64_t)buf[4] << 24
-		| (uint64_t)buf[5] << 16
-		| (uint64_t)buf[6] << 8
-		| (uint64_t)buf[7];
+	return ((uint64_t)buf[0] << 56)
+		| ((uint64_t)buf[1] << 48)
+		| ((uint64_t)buf[2] << 40)
+		| ((uint64_t)buf[3] << 32)
+		| ((uint64_t)buf[4] << 24)
+		| ((uint64_t)buf[5] << 16)
+		| ((uint64_t)buf[6] << 8)
+		| ((uint64_t)buf[7]);
 }
 
 extern int16_t betoi16(const uint8_t *buf)
@@ -142,28 +143,28 @@ extern double letof64(const uint8_t *buf)
 
 extern void u16tobe(uint16_t val, uint8_t *dst)
 {
-	dst[0] = (uint8_t)((val >> 8) & 0xFF);
-	dst[1] = (uint8_t)(val & 0xFF);
+	dst[0] = (uint8_t)((val >> 8) & 0xFFu);
+	dst[1] = (uint8_t)(val & 0xFFu);
 }
 
 extern void u32tobe(uint32_t val, uint8_t *dst)
 {
-	dst[0] = (uint8_t)((val >> 24) & 0xFF);
-	dst[1] = (uint8_t)((val >> 16) & 0xFF);
-	dst[2] = (uint8_t)((val >> 8) & 0xFF);
-	dst[3] = (uint8_t)(val & 0xFF);
+	dst[0] = (uint8_t)((val >> 24) & 0xFFu);
+	dst[1] = (uint8_t)((val >> 16) & 0xFFu);
+	dst[2] = (uint8_t)((val >> 8) & 0xFFu);
+	dst[3] = (uint8_t)(val & 0xFFu);
 }
 
 extern void u64tobe(uint64_t val, uint8_t *dst)
 {
-	dst[0] = (uint8_t)((val >> 56) & 0xFF);
-	dst[1] = (uint8_t)((val >> 48) & 0xFF);
-	dst[2] = (uint8_t)((val >> 40) & 0xFF);
-	dst[3] = (uint8_t)((val >> 32) & 0xFF);
-	dst[4] = (uint8_t)((val >> 24) & 0xFF);
-	dst[5] = (uint8_t)((val >> 16) & 0xFF);
-	dst[6] = (uint8_t)((val >> 8) & 0xFF);
-	dst[7] = (uint8_t)(val & 0xFF);
+	dst[0] = (uint8_t)((val >> 56) & 0xFFu);
+	dst[1] = (uint8_t)((val >> 48) & 0xFFu);
+	dst[2] = (uint8_t)((val >> 40) & 0xFFu);
+	dst[3] = (uint8_t)((val >> 32) & 0xFFu);
+	dst[4] = (uint8_t)((val >> 24) & 0xFFu);
+	dst[5] = (uint8_t)((val >> 16) & 0xFFu);
+	dst[6] = (uint8_t)((val >> 8) & 0xFFu);
+	dst[7] = (uint8_t)(val & 0xFFu);
 }
 
 extern void i16tobe(int16_t val, uint8_t *dst)
@@ -193,28 +194,28 @@ extern void f64tobe(double val, uint8_t *dst)
 
 extern void u16tole(uint16_t val, uint8_t *dst)
 {
-	dst[0] = (uint8_t)(val & 0xFF);
-	dst[1] = (uint8_t)((val >> 8) & 0xFF);
+	dst[0] = (uint8_t)(val & 0xFFu);
+	dst[1] = (uint8_t)((val >> 8) & 0xFFu);
 }
 
 extern void u32tole(uint32_t val, uint8_t *dst)
 {
-	dst[0] = (uint8_t)(val & 0xFF);
-	dst[1] = (uint8_t)((val >> 8) & 0xFF);
-	dst[2] = (uint8_t)((val >> 16) & 0xFF);
-	dst[3] = (uint8_t)((val >> 24) & 0xFF);
+	dst[0] = (uint8_t)(val & 0xFFu);
+	dst[1] = (uint8_t)((val >> 8) & 0xFFu);
+	dst[2] = (uint8_t)((val >> 16) & 0xFFu);
+	dst[3] = (uint8_t)((val >> 24) & 0xFFu);
 }
 
 extern void u64tole(uint64_t val, uint8_t *dst)
 {
-	dst[0] = (uint8_t)(val & 0xFF);
-	dst[1] = (uint8_t)((val >> 8) & 0xFF);
-	dst[2] = (uint8_t)((val >> 16) & 0xFF);
-	dst[3] = (uint8_t)((val >> 24) & 0xFF);
-	dst[4] = (uint8_t)((val >> 32) & 0xFF);
-	dst[5] = (uint8_t)((val >> 40) & 0xFF);
-	dst[6] = (uint8_t)((val >> 48) & 0xFF);
-	dst[7] = (uint8_t)((val >> 56) & 0xFF);
+	dst[0] = (uint8_t)(val & 0xFFu);
+	dst[1] = (uint8_t)((val >> 8) & 0xFFu);
+	dst[2] = (uint8_t)((val >> 16) & 0xFFu);
+	dst[3] = (uint8_t)((val >> 24) & 0xFFu);
+	dst[4] = (uint8_t)((val >> 32) & 0xFFu);
+	dst[5] = (uint8_t)((val >> 40) & 0xFFu);
+	dst[6] = (uint8_t)((val >> 48) & 0xFFu);
+	dst[7] = (uint8_t)((val >> 56) & 0xFFu);
 }
 
 extern void i16tole(int16_t val, uint8_t *dst)
