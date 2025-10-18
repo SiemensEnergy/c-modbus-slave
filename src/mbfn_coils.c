@@ -56,7 +56,7 @@ extern enum mbstatus_e mbfn_read_coils(
 		return MB_DEV_FAIL;
 	}
 
-	if (req[0]!=MBFC_READ_COILS && req[0]!=MBFC_READ_DISC_INPUTS) {
+	if ((req[0]!=MBFC_READ_COILS) && (req[0]!=MBFC_READ_DISC_INPUTS)) {
 		return MB_DEV_FAIL;
 	}
 
@@ -64,10 +64,10 @@ extern enum mbstatus_e mbfn_read_coils(
 		return MB_ILLEGAL_DATA_VAL;
 	}
 
-	start_addr = betou16(req+1);
-	quantity = betou16(req+3);
+	start_addr = betou16(req+1u);
+	quantity = betou16(req+3u);
 
-	if (quantity == 0 || quantity > MBCOIL_N_READ_MAX) { /* Validate quantity */
+	if ((quantity==0u) || (quantity>MBCOIL_N_READ_MAX)) { /* Validate quantity */
 		return MB_ILLEGAL_DATA_VAL;
 	}
 
@@ -79,20 +79,20 @@ extern enum mbstatus_e mbfn_read_coils(
 		return MB_ILLEGAL_DATA_ADDR;
 	}
 
-	byte_count = (quantity + 7u) / 8u;
+	byte_count = (uint8_t)((quantity + 7u) / 8u);
 	res->p[1] = byte_count;
 	res->size = 2u + byte_count;
 
-	memset(res->p+2, 0, byte_count); /* Clear all response bytes */
+	memset(res->p+2u, 0, byte_count); /* Clear all response bytes */
 
 	/* Read coils */
-	for (i=0; i<quantity; ++i) {
-		addr = start_addr + i;
+	for (i=0u; i<quantity; ++i) {
+		addr = start_addr + (uint16_t)i;
 		if ((coil = mbcoil_find_desc(coils, n_coils, addr))) {
 			switch (mbcoil_read(coil)) {
 			case MBCOIL_READ_OFF: break;
 			case MBCOIL_READ_ON:
-				res->p[2 + i/8] |= (1<<(i%8));
+				res->p[2u + i/8u] |= (uint8_t)(1<<(i%8));
 				break;
 			case MBCOIL_READ_LOCKED: return MB_ILLEGAL_DATA_ADDR;
 			case MBCOIL_READ_NO_ACCESS: break; /* Leave coils without read access as 0 */
@@ -130,8 +130,8 @@ extern enum mbstatus_e mbfn_write_coil(
 		return MB_ILLEGAL_DATA_VAL;
 	}
 
-	coil_addr = betou16(req+1);
-	coil_value = betou16(req+3);
+	coil_addr = betou16(req+1u);
+	coil_value = betou16(req+3u);
 
 	/* Validate coil value (must be 0x0000 or 0xFF00) */
 	if (coil_value != MBCOIL_OFF && coil_value != MBCOIL_ON) {
@@ -197,11 +197,11 @@ extern enum mbstatus_e mbfn_write_coils(
 		return MB_ILLEGAL_DATA_VAL;
 	}
 
-	start_addr = betou16(req+1);
-	quantity = betou16(req+3);
+	start_addr = betou16(req+1u);
+	quantity = betou16(req+3u);
 	byte_count = req[5];
 
-	if (quantity == 0u || quantity > MBCOIL_N_WRITE_MAX) { /* Validate quantity */
+	if ((quantity==0u) || (quantity>MBCOIL_N_WRITE_MAX)) { /* Validate quantity */
 		return MB_ILLEGAL_DATA_VAL;
 	}
 
@@ -214,8 +214,8 @@ extern enum mbstatus_e mbfn_write_coils(
 	}
 
 	/* Ensure all coils exists and can be written to before writing anything */
-	for (i=0; i<quantity; ++i) {
-		addr = start_addr + i;
+	for (i=0u; i<quantity; ++i) {
+		addr = start_addr + (uint16_t)i;
 		if (!(coil = mbcoil_find_desc(coils, n_coils, addr))) {
 			return MB_ILLEGAL_DATA_ADDR;
 		}
@@ -226,11 +226,11 @@ extern enum mbstatus_e mbfn_write_coils(
 	}
 
 	/* Write coils */
-	for (i=0; i<quantity; ++i) {
-		addr = start_addr + i;
+	for (i=0u; i<quantity; ++i) {
+		addr = start_addr + (uint16_t)i;
 		coil = mbcoil_find_desc(coils, n_coils, addr);
 
-		status = mbcoil_write(coil, !!(req[6 + i/8] & (1<<(i%8))));
+		status = mbcoil_write(coil, !!(req[6u + i/8u] & (uint8_t)(1<<(i%8))));
 		if (status!=MB_OK) {
 			return status;
 		}
@@ -246,8 +246,8 @@ extern enum mbstatus_e mbfn_write_coils(
 	}
 
 	/* Prepare response */
-	u16tobe(start_addr, res->p+1);
-	u16tobe(quantity, res->p+3);
+	u16tobe(start_addr, res->p+1u);
+	u16tobe(quantity, res->p+3u);
 	res->size = 5u;
 
 	return MB_OK;
