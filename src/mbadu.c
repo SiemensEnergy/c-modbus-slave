@@ -42,11 +42,11 @@ static size_t prep_res(uint8_t slave_addr, uint8_t *res, size_t pdu_size)
 	uint16_t crc;
 
 	res[0] = slave_addr;
-	res_size = 1 + pdu_size;
+	res_size = 1u + pdu_size;
 
 	crc = mbcrc16(res, res_size);
 	u16tole(crc, res+res_size);
-	res_size += 2;
+	res_size += 2u;
 
 	return res_size;
 }
@@ -62,46 +62,46 @@ extern size_t mbadu_handle_req(
 	uint16_t recv_crc;
 	size_t pdu_size;
 
-	if (!inst || !req || !res) return 0;
-	if (req_len<MBADU_SIZE_MIN || req_len>MBADU_SIZE_MAX) return 0;
+	if (!inst || !req || !res) return 0u;
+	if ((req_len<MBADU_SIZE_MIN) || (req_len>MBADU_SIZE_MAX)) return 0u;
 
 	++inst->state.bus_msg_counter;
 
 	recv_event = 0;
-	if (inst->state.is_listen_only) recv_event |= MB_COMM_EVENT_RECV_LISTEN_MODE;
+	if (inst->state.is_listen_only) {recv_event |= MB_COMM_EVENT_RECV_LISTEN_MODE;}
 
 	/* Check CRC before slave address to monitor the overall health of the
 	   bus, not just this device */
-	recv_crc = letou16(req + req_len - 2); /* CRC is in the last two bytes, little endian */
-	if (recv_crc != mbcrc16(req, req_len - 2)) {
+	recv_crc = letou16(req + req_len - 2u); /* CRC is in the last two bytes, little endian */
+	if (recv_crc != mbcrc16(req, req_len - 2u)) {
 		++inst->state.bus_comm_err_counter;
 		recv_event |= MB_COMM_EVENT_RECV_COMM_ERR;
 		mb_add_comm_event(inst, MB_COMM_EVENT_IS_RECV | recv_event);
-		return 0;
+		return 0u;
 	}
 
 	/* Check if this request is addressed to this device */
 	recv_slave_addr = req[0];
-	if (recv_slave_addr != inst->serial.slave_addr
-			&& recv_slave_addr != MBADU_ADDR_BROADCAST
-			&& (!inst->serial.enable_def_resp || recv_slave_addr != MBADU_ADDR_DEFAULT_RESP)) {
-		if (recv_event) mb_add_comm_event(inst, MB_COMM_EVENT_IS_RECV | recv_event);
-		return 0;
+	if ((recv_slave_addr != inst->serial.slave_addr)
+			&& (recv_slave_addr != MBADU_ADDR_BROADCAST)
+			&& (!inst->serial.enable_def_resp || (recv_slave_addr != MBADU_ADDR_DEFAULT_RESP))) {
+		if (recv_event) {mb_add_comm_event(inst, MB_COMM_EVENT_IS_RECV | recv_event);}
+		return 0u;
 	}
 
-	if (recv_slave_addr==MBADU_ADDR_BROADCAST) recv_event |= MB_COMM_EVENT_RECV_BROADCAST;
-	if (recv_event) mb_add_comm_event(inst, MB_COMM_EVENT_IS_RECV | recv_event);
+	if (recv_slave_addr==MBADU_ADDR_BROADCAST) {recv_event |= MB_COMM_EVENT_RECV_BROADCAST;}
+	if (recv_event) {mb_add_comm_event(inst, MB_COMM_EVENT_IS_RECV | recv_event);}
 
 	pdu_size = mbpdu_handle_req(
 		inst,
-		req+1, /* Skip slave address */
-		req_len-3, /* - Slave address and crc */
-		res+1);
+		req+1u, /* Skip slave address */
+		req_len-3u, /* - Slave address and crc */
+		res+1u);
 
 	/* Requests sent to the broadcast address shall never get a response */
-	if (pdu_size==0u || recv_slave_addr==MBADU_ADDR_BROADCAST) {
+	if ((pdu_size==0u) || (recv_slave_addr==MBADU_ADDR_BROADCAST)) {
 		++inst->state.no_resp_counter;
-		return 0;
+		return 0u;
 	}
 
 	return prep_res(recv_slave_addr, res, pdu_size);
