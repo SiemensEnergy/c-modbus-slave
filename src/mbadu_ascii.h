@@ -46,7 +46,7 @@ enum {
 	 * - 2 lrc
 	 * - 2 cr/lf
 	 */
-	MBADU_ASCII_HEADER_SIZE=7,
+	MBADU_ASCII_HEADER_SIZE=7u,
 
 	/**
 	 * - 1 Start char
@@ -55,7 +55,7 @@ enum {
 	 * - 2 lrc
 	 * - 2 cr/lf
 	 */
-	MBADU_ASCII_SIZE_MIN = MBADU_ASCII_HEADER_SIZE + 2,
+	MBADU_ASCII_SIZE_MIN = MBADU_ASCII_HEADER_SIZE + 2u,
 	/*
 	 * - 1 Start char
 	 * - 2 Slave address
@@ -65,7 +65,7 @@ enum {
 	 * - 2 lrc
 	 * - 2 crlf
 	 */
-	MBADU_ASCII_SIZE_MAX = MBADU_ASCII_HEADER_SIZE + MBPDU_SIZE_MAX*2,
+	MBADU_ASCII_SIZE_MAX = MBADU_ASCII_HEADER_SIZE + MBPDU_SIZE_MAX*2u,
 
 	MBADU_ASCII_START_CHAR=':',
 };
