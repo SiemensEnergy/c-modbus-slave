@@ -7,7 +7,7 @@
  * - Rule 12.3: The comma operator should not be used
  *   Rationale: Improves readability
  * - Rule 13.4: The result of an assignment operator should not be used
- *   Rationale: Improves readability
+ *   Rationale: Improves readability and code maintainability
  *   Mitigation: Parentheses used to clarify intent
  * - Rule 14.2: A for loop shall be well-formed
  *   Rationale: Complex loop conditions necessary for protocol buffer parsing
@@ -15,7 +15,7 @@
  * - Rule 15.5: A function should have a single point of exit at the end
  *   Rationale: Multiple returns improve readability and reduce nesting for error conditions
  * - Rule 15.7: All if … else if constructs shall be terminated with an else statement
- *   Rationale: Improves readability
+ *   Rationale: Improves readability and code maintainability
  * - Rule 18.4: The +, -, += and -= operators should not be applied to an expression of pointer type
  *   Rationale: Pointer arithmetic necessary for efficient protocol buffer operations
  *   Mitigation: Bounds checking performed, arithmetic limited to safe operations
