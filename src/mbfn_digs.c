@@ -54,7 +54,7 @@ static enum mbstatus_e loopback(
 	size_t req_len,
 	struct mbpdu_buf_s *res)
 {
-	memcpy(res->p, req, req_len);
+	(void)memcpy(res->p, req, req_len);
 	res->size = req_len;
 	return MB_OK;
 }
@@ -70,10 +70,10 @@ static enum mbstatus_e restart_comms_opt(
 {
 	uint16_t val;
 
-	if (req_len != 5) return MB_ILLEGAL_DATA_VAL;
+	if (req_len != 5u) return MB_ILLEGAL_DATA_VAL;
 
-	val = betou16(req+3);
-	if (val!=0x0000 && val!=0xFF00) return MB_ILLEGAL_DATA_VAL;
+	val = betou16(req+3u);
+	if ((val!=0x0000u) && (val!=0xFF00u)) return MB_ILLEGAL_DATA_VAL;
 
 	if (inst->serial.request_restart) {
 		inst->serial.request_restart();
@@ -81,15 +81,15 @@ static enum mbstatus_e restart_comms_opt(
 	inst->state.is_listen_only = 0;
 	reset_comm_counters(inst);
 
-	if (val==0xFF00) { /* Clear event log ring buffer */
+	if (val==0xFF00u) { /* Clear event log ring buffer */
 		inst->state.event_log_write_pos = 0;
 		inst->state.event_log_count = 0;
 	} else {
 		mb_add_comm_event(inst, MB_COMM_EVENT_COMM_RESTART);
 	}
 
-	u16tobe(val, res->p+3);
-	res->size += 2;
+	u16tobe(val, res->p+3u);
+	res->size += 2u;
 
 	return MB_OK;
 }
@@ -103,15 +103,15 @@ static enum mbstatus_e read_diagnostic_reg(
 	size_t req_len,
 	struct mbpdu_buf_s *res)
 {
-	if (req_len != 5) return MB_ILLEGAL_DATA_VAL;
-	if (betou16(req+3) != 0) return MB_ILLEGAL_DATA_VAL;
+	if (req_len != 5u) return MB_ILLEGAL_DATA_VAL;
+	if (betou16(req+3u) != 0u) return MB_ILLEGAL_DATA_VAL;
 
 	if (inst->serial.read_diagnostics_cb) {
-		u16tobe(inst->serial.read_diagnostics_cb(), res->p+3);
+		u16tobe(inst->serial.read_diagnostics_cb(), res->p+3u);
 	} else {
-		u16tobe(0, res->p+3);
+		u16tobe(0u, res->p+3u);
 	}
-	res->size += 2;
+	res->size += 2u;
 
 	return MB_OK;
 }
@@ -125,15 +125,15 @@ static enum mbstatus_e change_ascii_delimiter(
 	size_t req_len,
 	struct mbpdu_buf_s *res)
 {
-	if (req_len != 5) return MB_ILLEGAL_DATA_VAL;
-	if (req[3] > 127) return MB_ILLEGAL_DATA_VAL;
-	if (req[4] != 0) return MB_ILLEGAL_DATA_VAL;
+	if (req_len != 5u) return MB_ILLEGAL_DATA_VAL;
+	if (req[3] > 127u) return MB_ILLEGAL_DATA_VAL;
+	if (req[4] != 0u) return MB_ILLEGAL_DATA_VAL;
 
 	inst->state.ascii_delimiter = req[3];
 
 	res->p[3] = req[3];
 	res->p[4] = 0u;
-	res->size += 2;
+	res->size += 2u;
 
 	return MB_OK;
 }
@@ -146,8 +146,8 @@ static enum mbstatus_e force_listen_only(
 	const uint8_t *req,
 	size_t req_len)
 {
-	if (req_len != 5) return MB_ILLEGAL_DATA_VAL;
-	if (betou16(req+3) != 0) return MB_ILLEGAL_DATA_VAL;
+	if (req_len != 5u) return MB_ILLEGAL_DATA_VAL;
+	if (betou16(req+3u) != 0u) return MB_ILLEGAL_DATA_VAL;
 
 	inst->state.is_listen_only = 1;
 	mb_add_comm_event(inst, MB_COMM_EVENT_ENTERED_LISTEN_ONLY);
@@ -164,8 +164,8 @@ static enum mbstatus_e clear_counts_n_diag_reg(
 	size_t req_len,
 	struct mbpdu_buf_s *res)
 {
-	if (req_len != 5) return MB_ILLEGAL_DATA_VAL;
-	if (betou16(req+3) != 0) return MB_ILLEGAL_DATA_VAL;
+	if (req_len != 5u) return MB_ILLEGAL_DATA_VAL;
+	if (betou16(req+3u) != 0u) return MB_ILLEGAL_DATA_VAL;
 
 	reset_comm_counters(inst);
 	if (inst->serial.reset_diagnostics_cb) {
@@ -174,7 +174,7 @@ static enum mbstatus_e clear_counts_n_diag_reg(
 
 	res->p[3] = 0u;
 	res->p[4] = 0u;
-	res->size += 2;
+	res->size += 2u;
 
 	return MB_OK;
 }
@@ -185,11 +185,11 @@ static enum mbstatus_e read_counter(
 	size_t req_len,
 	struct mbpdu_buf_s *res)
 {
-	if (req_len != 5) return MB_ILLEGAL_DATA_VAL;
-	if (betou16(req+3) != 0) return MB_ILLEGAL_DATA_VAL;
+	if (req_len != 5u) return MB_ILLEGAL_DATA_VAL;
+	if (betou16(req+3u) != 0u) return MB_ILLEGAL_DATA_VAL;
 
-	u16tobe(counter_value, res->p+3);
-	res->size += 2;
+	u16tobe(counter_value, res->p+3u);
+	res->size += 2u;
 
 	return MB_OK;
 }
@@ -203,14 +203,14 @@ static enum mbstatus_e clr_overrun(
 	size_t req_len,
 	struct mbpdu_buf_s *res)
 {
-	if (req_len != 5) return MB_ILLEGAL_DATA_VAL;
-	if (betou16(req+3) != 0) return MB_ILLEGAL_DATA_VAL;
+	if (req_len != 5u) return MB_ILLEGAL_DATA_VAL;
+	if (betou16(req+3u) != 0u) return MB_ILLEGAL_DATA_VAL;
 
 	inst->state.bus_char_overrun_counter = 0u;
 
 	res->p[3] = 0u;
 	res->p[4] = 0u;
-	res->size += 2;
+	res->size += 2u;
 
 	return MB_OK;
 }
@@ -223,15 +223,15 @@ extern enum mbstatus_e mbfn_digs(
 {
 	if (!inst || !req || !res) return MB_DEV_FAIL;
 
-	if (req_len < 3) return MB_ILLEGAL_DATA_VAL;
+	if (req_len < 3u) return MB_ILLEGAL_DATA_VAL;
 
 	/* Always echo function code and sub-function code */
 	res->p[0] = req[0]; /* Fc */
 	res->p[1] = req[1]; /* Sub-fc H */
 	res->p[2] = req[2]; /* Sub-fc L */
-	res->size = 3;
+	res->size = 3u;
 
-	switch (betou16(req+1)) {
+	switch (betou16(req+1u)) {
 	case MBFC_DIGS_LOOPBACK: return loopback(req, req_len, res);
 	case MBFC_DIGS_RESTART_COMMS_OPT: return restart_comms_opt(inst, req, req_len, res);
 	case MBFC_DIGS_REG: return read_diagnostic_reg(inst, req, req_len, res);
@@ -258,11 +258,11 @@ extern enum mbstatus_e mbfn_comm_event_counter(
 	struct mbpdu_buf_s *res)
 {
 	if (!inst || !req || !res) return MB_DEV_FAIL;
-	if (req_len != 1) return MB_ILLEGAL_DATA_VAL;
+	if (req_len != 1u) return MB_ILLEGAL_DATA_VAL;
 
-	u16tobe(inst->state.status, res->p+1);
-	u16tobe(inst->state.comm_event_counter, res->p+3);
-	res->size = 5;
+	u16tobe(inst->state.status, res->p+1u);
+	u16tobe(inst->state.comm_event_counter, res->p+3u);
+	res->size = 5u;
 
 	return MB_OK;
 }
@@ -276,13 +276,13 @@ extern enum mbstatus_e mbfn_comm_event_log(
 	int i, ix;
 
 	if (!inst || !req || !res) return MB_DEV_FAIL;
-	if (req_len != 1) return MB_ILLEGAL_DATA_VAL;
+	if (req_len != 1u) return MB_ILLEGAL_DATA_VAL;
 
-	res->p[1] = 6 + inst->state.event_log_count; /* Byte count */
-	u16tobe(inst->state.status, res->p+2);
-	u16tobe(inst->state.comm_event_counter, res->p+4);
-	u16tobe(inst->state.bus_msg_counter, res->p+6);
-	res->size = 8;
+	res->p[1] = (uint8_t)(6 + inst->state.event_log_count); /* Byte count */
+	u16tobe(inst->state.status, res->p+2u);
+	u16tobe(inst->state.comm_event_counter, res->p+4u);
+	u16tobe(inst->state.bus_msg_counter, res->p+6u);
+	res->size = 8u;
 
 	/* Read comm log starting with the newest message */
 	for (i=0; i<inst->state.event_log_count; ++i) {
