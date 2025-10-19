@@ -60,7 +60,7 @@ if (resp_len) {
 }
 ```
 
-> **💡 Tip:** Check the `examples/` directory for complete working examples with different transport layers (Serial, Ethernet).
+> **Tip:** Check the `examples/` directory for complete working examples with different transport layers (Serial, Ethernet).
 
 ## Documentation
 
@@ -77,7 +77,7 @@ This project follows **MISRA C:2023** coding standards with a few documented exc
 - Static analysis compliance for safety-critical applications
 - Predictable behavior and reduced complexity
 - Enhanced portability across embedded platforms
-- Clear documentation of any standard deviations
+- Clear documentation of any deviations from the standard
 
 ## Contributing
 
