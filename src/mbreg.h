@@ -301,8 +301,8 @@ struct mbreg_desc_s {
 };
 
 /** @brief Only for internal use */
-#define MBREG_READ_NO_ACCESS 0 /* No read access method present */
-#define MBREG_READ_LOCKED (SIZE_MAX-1) /* Register is locked */
+#define MBREG_READ_NO_ACCESS 0u /* No read access method present */
+#define MBREG_READ_LOCKED (SIZE_MAX-1u) /* Register is locked */
 #define MBREG_READ_DEV_FAIL SIZE_MAX /* Invalid coil descriptor configuration */
 
 /**
@@ -389,7 +389,7 @@ extern size_t mbreg_read(
  * @note Calls wlock_cb if defined to check dynamic write locks
  * @note Calls wlock_override_cb if defined to allow override of lock conditions
  */
-extern int mbreg_write_allowed(
+extern size_t mbreg_write_allowed(
 	const struct mbreg_desc_s *reg,
 	uint16_t addr,
 	uint16_t start_addr,

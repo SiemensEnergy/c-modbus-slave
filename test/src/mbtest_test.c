@@ -231,7 +231,7 @@ TEST(mbtest_coils_valid_value_access)
 }
 
 /* Test helper functions for coil tests */
-static uint8_t test_coil_read_fn(void)
+static int test_coil_read_fn(void)
 {
 	return 1;
 }

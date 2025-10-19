@@ -47,7 +47,7 @@ extern size_t mbadu_tcp_handle_req(
 	if (!inst || !req || !res) return 0u;
 
 	/* We must at least have a complate header + function code */
-	if (req_len < (MBAP_SIZE + 1)) {
+	if (req_len < (MBAP_SIZE+1u)) {
 		return 0u;
 	}
 
@@ -63,7 +63,7 @@ extern size_t mbadu_tcp_handle_req(
 	pdu_size = mbpdu_handle_req(
 		inst,
 		req + MBAP_SIZE,
-		(size_t)(length - 1),
+		(size_t)(length-1u),
 		res + MBAP_SIZE);
 
 	if (pdu_size==0u) {
@@ -73,7 +73,7 @@ extern size_t mbadu_tcp_handle_req(
 	/* Build response MBAP */
 	u16tobe(transaction_id, res + MBAP_POS_TRANS_ID);
 	u16tobe(protocol_id, res + MBAP_POS_PROT_ID);
-	u16tobe(1+pdu_size, res + MBAP_POS_LEN);
+	u16tobe(1u+pdu_size, res + MBAP_POS_LEN);
 	res[MBAP_POS_UNIT_ID] = unit_id;
 
 	return MBAP_SIZE + pdu_size;

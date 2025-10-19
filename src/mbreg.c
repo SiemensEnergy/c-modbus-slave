@@ -34,11 +34,11 @@
 #include <stdint.h>
 #include <string.h>
 
-enum {BSEARCH_THRESHOLD=16};
+enum {BSEARCH_THRESHOLD=16u};
 
 static size_t min(size_t a, size_t b)
 {
-	return a < b ? a : b;
+	return (a < b) ? a : b;
 }
 
 /**
@@ -86,8 +86,8 @@ static void swap_words_u64(uint8_t *data)
 
 extern size_t mbreg_size(const struct mbreg_desc_s *reg)
 {
-	size_t sz = (reg->type & MRTYPE_SIZE_MASK) / 8;
-	return sz==1 ? 2 : sz; /* 8-bit regs don't exist in Modbus */
+	size_t sz = (reg->type & MRTYPE_SIZE_MASK) / 8u;
+	return (sz==1u) ? 2u : sz; /* 8-bit regs don't exist in Modbus */
 }
 
 /**
@@ -100,9 +100,9 @@ static int is_addr_desc_match(const struct mbreg_desc_s *reg, uint16_t addr)
 	if (addr == reg->address) {
 		return 1;
 	} else if (addr > reg->address) {
-		reg_size_w = mbreg_size(reg) / 2;
+		reg_size_w = mbreg_size(reg) / 2u;
 		if (reg->type & MRTYPE_BLOCK) {
-			if (addr < reg->address + reg->n_block_entries*reg_size_w) {
+			if (addr < (reg->address + reg->n_block_entries*reg_size_w)) {
 				return 1;
 			}
 		} else if (addr < (reg->address + reg_size_w)) {
@@ -122,27 +122,27 @@ extern const struct mbreg_desc_s *mbreg_find_desc(
 	size_t l, m, r;
 	size_t i;
 
-	if (!regs || n_regs==0) return NULL;
+	if (!regs || (n_regs==0u)) return NULL;
 
 	if (n_regs > BSEARCH_THRESHOLD) { /* Only use binary search for larger descriptor sets */
-		l = 0;
-		r = n_regs - 1;
+		l = 0u;
+		r = n_regs - 1u;
 
 		while (l <= r) {
-			m = l + (r - l) / 2;
+			m = l + (r - l) / 2u;
 			reg = regs + m;
 
 			if (is_addr_desc_match(reg, addr)) {
 				return reg;
 			} else if (reg->address < addr) {
-				l = m + 1;
+				l = m + 1u;
 			} else {
-				if (m == 0) break; /* Prevent underflow */
-				r = m - 1;
+				if (m == 0u) break; /* Prevent underflow */
+				r = m - 1u;
 			}
 		}
 	} else {
-		for (i=0; i<n_regs; ++i) {
+		for (i=0u; i<n_regs; ++i) {
 			reg = regs + i;
 			if (is_addr_desc_match(reg, addr)) {
 				return reg;
@@ -289,11 +289,11 @@ static int read_block(const struct mbreg_desc_s *reg, uint16_t addr, uint8_t *re
 
 	if (!read_ptr_ok(reg)) return 0;
 
-	reg_size_w = mbreg_size(reg) / 2;
-	ix = (addr - reg->address) / reg_size_w;
-	start_addr = reg->address + ix * reg_size_w;
+	reg_size_w = mbreg_size(reg) / 2u;
+	ix = (size_t)(addr - reg->address) / reg_size_w;
+	start_addr = (size_t)reg->address + ix * reg_size_w;
 
-	if ((size_t)(addr-start_addr) >= reg_size_w) {
+	if ((addr-start_addr) >= reg_size_w) {
 		return 0;
 	}
 
@@ -380,14 +380,14 @@ static size_t read_partial(
 		}
 	}
 
-	buf_offset = (addr - reg->address) * 2;
-	n_copy = min(reg_size-buf_offset, n_remaining_regs*2);
+	buf_offset = (size_t)(addr - reg->address) * 2u;
+	n_copy = min(reg_size-buf_offset, n_remaining_regs*2u);
 
 	if (res) {
-		memcpy(res, buf+buf_offset, n_copy);
+		(void)memcpy(res, buf+buf_offset, n_copy);
 	}
 
-	return n_copy / 2;
+	return n_copy / 2u;
 }
 
 static int read_full(
@@ -438,10 +438,10 @@ extern size_t mbreg_read(
 	if (!(reg->access & MRACC_R_MASK)) return MBREG_READ_NO_ACCESS; /* Check if read is allowed */
 	if (reg->rlock_cb && reg->rlock_cb()) return MBREG_READ_LOCKED; /* Check if read locked */
 
-	reg_size_w = mbreg_size(reg) / 2;
+	reg_size_w = mbreg_size(reg) / 2u;
 	if (reg_size_w == 0u) return MBREG_READ_DEV_FAIL;
 
-	if (n_remaining_regs < reg_size_w || (addr - reg->address) % reg_size_w) {
+	if ((n_remaining_regs < reg_size_w) || ((addr - reg->address) % reg_size_w)) {
 		return read_partial(reg, addr, n_remaining_regs, res, swap_words);
 	} else {
 		if (res) { /* Not dry run */
@@ -451,7 +451,7 @@ extern size_t mbreg_read(
 	}
 }
 
-extern int mbreg_write_allowed(
+extern size_t mbreg_write_allowed(
 	const struct mbreg_desc_s *reg,
 	uint16_t addr,
 	uint16_t start_addr,
@@ -480,7 +480,7 @@ extern int mbreg_write_allowed(
 		}
 	}
 
-	reg_size_w = mbreg_size(reg) / 2;
+	reg_size_w = mbreg_size(reg) / 2u;
 	if (reg_size_w == 0u) return 0u;
 
 	/* Make sure we have enough data for this register */
@@ -489,18 +489,15 @@ extern int mbreg_write_allowed(
 	}
 
 	/* Return n registers that will be written to */
-	if (n_remaining_regs < reg_size_w || (addr - reg->address) % reg_size_w) { /* Partial reg write */
-		offset = (addr - reg->address) * 2;
-		n_write_bytes = min(reg_size_w*2 - offset, n_remaining_regs*2);
-		return n_write_bytes / 2;
+	if ((n_remaining_regs < reg_size_w) || ((addr - reg->address) % reg_size_w)) { /* Partial reg write */
+		offset = (addr - reg->address) * 2u;
+		n_write_bytes = min(reg_size_w*2u - offset, n_remaining_regs*2u);
+		return n_write_bytes / 2u;
 	} else { /* Full register */
 		return reg_size_w;
 	}
 }
 
-/**
- * @return n 16-bit registers written
- */
 static enum mbstatus_e write_ptr(
 	const struct mbreg_desc_s *reg,
 	const uint8_t *val)
@@ -524,9 +521,6 @@ static enum mbstatus_e write_ptr(
 	return MB_OK;
 }
 
-/**
- * @return n 16-bit registers written
- */
 static enum mbstatus_e write_ptr_partial(
 	const struct mbreg_desc_s *reg,
 	uint16_t addr,
@@ -561,25 +555,22 @@ static enum mbstatus_e write_ptr_partial(
 	}
 
 	/* Apply the partial write */
-	buf_offset = (addr - reg->address) * 2;
-	n_copy = min(reg_size-buf_offset, n_remaining_regs*2);
-	memcpy(buf+buf_offset, val, n_copy);
+	buf_offset = (size_t)(addr - reg->address) * 2u;
+	n_copy = min(reg_size-buf_offset, n_remaining_regs*2u);
+	(void)memcpy(buf+buf_offset, val, n_copy);
 
-	*n_written = n_copy / 2;
+	*n_written = n_copy / 2u;
 
 	/* Write the modified value */
 	return write_ptr(reg, buf);
 }
 
-/**
- * @return n 16-bit registers written
- */
 static enum mbstatus_e write_block(
 	const struct mbreg_desc_s *reg,
 	uint16_t addr,
 	const uint8_t *val)
 {
-	size_t ix = (addr - reg->address) / (mbreg_size(reg) / 2);
+	size_t ix = (addr - reg->address) / (mbreg_size(reg) / 2u);
 
 	switch (reg->type & MRTYPE_MASK) {
 	case MRTYPE_U8: *(reg->write.pu8 + ix) = (uint8_t)betoi16(val); break;
@@ -598,9 +589,6 @@ static enum mbstatus_e write_block(
 	return MB_OK;
 }
 
-/**
- * @return n 16-bit registers written
- */
 static enum mbstatus_e write_block_partial(
 	const struct mbreg_desc_s *reg,
 	uint16_t addr,
@@ -613,7 +601,7 @@ static enum mbstatus_e write_block_partial(
 	size_t reg_size, reg_size_w, ix, buf_offset, n_copy;
 
 	reg_size = mbreg_size(reg);
-	reg_size_w = reg_size / 2;
+	reg_size_w = reg_size / 2u;
 	ix = (addr - reg->address) / reg_size_w;
 	start_addr = reg->address + ix * reg_size_w;
 
@@ -637,19 +625,16 @@ static enum mbstatus_e write_block_partial(
 	}
 
 	/* Apply the modification */
-	buf_offset = (addr - start_addr) * 2;
-	n_copy = min(reg_size-buf_offset, n_remaining_regs*2);
+	buf_offset = (addr - start_addr) * 2u;
+	n_copy = min(reg_size-buf_offset, n_remaining_regs*2u);
 	memcpy(buf+buf_offset, val, n_copy);
 
-	*n_written = n_copy / 2;
+	*n_written = n_copy / 2u;
 
 	/* Write the modified value */
 	return write_block(reg, addr, buf);
 }
 
-/**
- * @return n 16-bit registers written
- */
 static enum mbstatus_e write_fn(
 	const struct mbreg_desc_s *reg,
 	const uint8_t *val)
@@ -685,10 +670,10 @@ extern enum mbstatus_e mbreg_write(
 	if (n_remaining_regs == 0u) return MB_DEV_FAIL;
 	if (addr < reg->address) return MB_DEV_FAIL;
 
-	reg_size_w = mbreg_size(reg) / 2;
+	reg_size_w = mbreg_size(reg) / 2u;
 	if (reg_size_w == 0u) return MB_DEV_FAIL;
 
-	if (n_remaining_regs < reg_size_w || (addr - reg->address) % reg_size_w) { /* Partial reg write*/
+	if ((n_remaining_regs < reg_size_w) || ((addr - reg->address) % reg_size_w)) { /* Partial reg write*/
 		if (reg->type & MRTYPE_BLOCK) {
 			return write_block_partial(reg, addr, n_remaining_regs, val, n_written);
 		} else if ((reg->access & MRACC_W_MASK) == MRACC_W_PTR) {

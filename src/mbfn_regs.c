@@ -52,7 +52,7 @@ static enum mbstatus_e read_regs(
 	uint16_t addr, reg_offs;
 	size_t n_read_regs;
 
-	if (n_req_regs == 0u || n_req_regs > MBREG_N_READ_MAX) {
+	if ((n_req_regs==0u) || (n_req_regs>MBREG_N_READ_MAX)) {
 		return MB_ILLEGAL_DATA_VAL;
 	}
 
@@ -65,12 +65,12 @@ static enum mbstatus_e read_regs(
 	}
 
 	if (res) {
-		res->p[1] = 2 * n_req_regs; /* Byte count */
+		res->p[1] = (uint8_t)(2u * n_req_regs); /* Byte count */
 		res->size = 2u;
 	}
 
 	/* Read register value into response data */
-	for (reg_offs = 0; reg_offs < n_req_regs; ) {
+	for (reg_offs=0u; reg_offs < n_req_regs; ) {
 		addr = start_addr + reg_offs;
 		if ((reg = mbreg_find_desc(regs, n_regs, addr))) {
 			n_read_regs = mbreg_read(
@@ -84,14 +84,14 @@ static enum mbstatus_e read_regs(
 			} else if (n_read_regs==MBREG_READ_LOCKED) {
 				return MB_ILLEGAL_DATA_ADDR;
 			} else if (n_read_regs!=MBREG_READ_NO_ACCESS) {
-				if (res) res->size += n_read_regs*2;
+				if (res) {res->size += n_read_regs*2u;}
 			}
 
-			reg_offs += n_read_regs;
+			reg_offs += (uint16_t)n_read_regs;
 		} else {
 			if (res) {
-				res->p[res->size] = 0x00;
-				res->p[res->size+1] = 0x00;
+				res->p[res->size] = 0x00u;
+				res->p[res->size+1u] = 0x00u;
 				res->size += 2u;
 			}
 			++reg_offs;
@@ -116,17 +116,17 @@ static enum mbstatus_e write_regs(
 	uint16_t reg_offs, addr;
 	size_t n_regs_written;
 
-	if (n_req_regs == 0u || n_req_regs > MBREG_N_WRITE_MAX) {
+	if ((n_req_regs==0u) || (n_req_regs>MBREG_N_WRITE_MAX)) {
 		return MB_ILLEGAL_DATA_VAL;
 	}
 
 	/* Make sure received byte count matches number of registers to write */
-	if (n_req_regs*2 != byte_count) {
+	if ((n_req_regs*2u) != byte_count) {
 		return MB_ILLEGAL_DATA_VAL;
 	}
 
 	/* Ensure all registers exist and can be written to before writing anything */
-	for (reg_offs=0; reg_offs < n_req_regs; ) {
+	for (reg_offs=0u; reg_offs < n_req_regs; ) {
 		addr = start_addr + reg_offs;
 		if (!(reg = mbreg_find_desc(regs, n_regs, addr))) {
 			return MB_ILLEGAL_DATA_ADDR;
@@ -137,18 +137,18 @@ static enum mbstatus_e write_regs(
 			addr,
 			start_addr,
 			n_req_regs-reg_offs,
-			req_write_data + reg_offs*2);
+			req_write_data + reg_offs*2u);
 		if (n_regs_written == 0u) {
 			return MB_ILLEGAL_DATA_ADDR;
 		}
 
 		/* Advance by the actual written register size to handle
 		   sub-registers correctly */
-		reg_offs += n_regs_written;
+		reg_offs += (uint16_t)n_regs_written;
 	}
 
 	/* Write registers */
-	for (reg_offs=0; reg_offs < n_req_regs; ) {
+	for (reg_offs=0u; reg_offs < n_req_regs; ) {
 		addr = start_addr + reg_offs;
 		reg = mbreg_find_desc(regs, n_regs, addr);
 
@@ -156,10 +156,10 @@ static enum mbstatus_e write_regs(
 			reg,
 			addr,
 			n_req_regs-reg_offs,
-			req_write_data + reg_offs*2,
+			req_write_data + reg_offs*2u,
 			&n_regs_written);
 		if (status!=MB_OK) return status;
-		if (n_regs_written==0) return MB_DEV_FAIL;
+		if (n_regs_written==0u) return MB_DEV_FAIL;
 
 		if (reg->post_write_cb) {
 			reg->post_write_cb();
@@ -167,7 +167,7 @@ static enum mbstatus_e write_regs(
 
 		/* Advance by the actual written register size to handle
 		   sub-registers correctly */
-		reg_offs += n_regs_written;
+		reg_offs += (uint16_t)n_regs_written;
 	}
 
 	if (inst->commit_regs_write_cb) {
@@ -176,8 +176,8 @@ static enum mbstatus_e write_regs(
 
 	/* Prepare response */
 	if (res) {
-		u16tobe(start_addr, res->p+1);
-		u16tobe(n_req_regs, res->p+3);
+		u16tobe(start_addr, res->p+1u);
+		u16tobe(n_req_regs, res->p+3u);
 		res->size = 5u;
 	}
 
@@ -194,11 +194,9 @@ extern enum mbstatus_e mbfn_read_regs(
 {
 	uint16_t start_addr, n_req_regs;
 
-	if (!inst || !regs || !req || !res) {
-		return MB_DEV_FAIL;
-	}
+	if (!inst || !regs || !req || !res) return MB_DEV_FAIL;
 
-	if (req[0]!=MBFC_READ_HOLDING_REGS && req[0]!=MBFC_READ_INPUT_REGS) {
+	if ((req[0]!=MBFC_READ_HOLDING_REGS) && (req[0]!=MBFC_READ_INPUT_REGS)) {
 		return MB_DEV_FAIL;
 	}
 
@@ -206,8 +204,8 @@ extern enum mbstatus_e mbfn_read_regs(
 		return MB_ILLEGAL_DATA_VAL;
 	}
 
-	start_addr = betou16(req+1);
-	n_req_regs = betou16(req+3); /* Amount of 16 bit registers to read */
+	start_addr = betou16(req+1u);
+	n_req_regs = betou16(req+3u); /* Amount of 16 bit registers to read */
 
 	return read_regs(
 		inst,
@@ -232,9 +230,7 @@ extern enum mbstatus_e mbfn_write_reg(
 	size_t n_written;
 	uint16_t addr;
 
-	if (!inst || !regs || !req || !res) {
-		return MB_DEV_FAIL;
-	}
+	if (!inst || !regs || !req || !res) return MB_DEV_FAIL;
 
 	if (req[0]!=MBFC_WRITE_SINGLE_REG) {
 		return MB_DEV_FAIL;
@@ -244,17 +240,17 @@ extern enum mbstatus_e mbfn_write_reg(
 		return MB_ILLEGAL_DATA_VAL;
 	}
 
-	addr = betou16(req+1);
+	addr = betou16(req+1u);
 
 	if (!(reg = mbreg_find_desc(regs, n_regs, addr))) {
 		return MB_ILLEGAL_DATA_ADDR;
 	}
 
-	if (mbreg_write_allowed(reg, addr, addr, 1u, req+3) != 1u) {
+	if (mbreg_write_allowed(reg, addr, addr, 1u, req+3u) != 1u) {
 		return MB_ILLEGAL_DATA_ADDR;
 	}
 
-	status = mbreg_write(reg, addr, 1u, req+3, &n_written);
+	status = mbreg_write(reg, addr, 1u, req+3u, &n_written);
 	if (status!=MB_OK) return status;
 	if (n_written!=1u) return MB_DEV_FAIL;
 
@@ -286,9 +282,7 @@ extern enum mbstatus_e mbfn_write_regs(
 	uint16_t start_addr, n_req_regs;
 	uint8_t byte_count;
 
-	if (!inst || !regs || !req || !res) {
-		return MB_DEV_FAIL;
-	}
+	if (!inst || !regs || !req || !res) return MB_DEV_FAIL;
 
 	if (req[0]!=MBFC_WRITE_MULTIPLE_REGS) {
 		return MB_DEV_FAIL;
@@ -300,8 +294,8 @@ extern enum mbstatus_e mbfn_write_regs(
 		return MB_ILLEGAL_DATA_VAL;
 	}
 
-	start_addr = betou16(req+1);
-	n_req_regs = betou16(req+3); /* Amount of 16 bit registers to write */
+	start_addr = betou16(req+1u);
+	n_req_regs = betou16(req+3u); /* Amount of 16 bit registers to write */
 	byte_count = req[5];
 
 	if (req_len-6u != byte_count) {
@@ -315,7 +309,7 @@ extern enum mbstatus_e mbfn_write_regs(
 		start_addr,
 		n_req_regs,
 		byte_count,
-		req+6,
+		req+6u,
 		res);
 }
 
@@ -332,9 +326,7 @@ extern enum mbstatus_e mbfn_read_write_regs(
 	uint16_t write_start_addr, n_write_regs;
 	uint8_t write_byte_count;
 
-	if (!inst || !regs || !req || !res) {
-		return MB_DEV_FAIL;
-	}
+	if (!inst || !regs || !req || !res) return MB_DEV_FAIL;
 
 	if (req[0]!=MBFC_READ_WRITE_REGS) {
 		return MB_DEV_FAIL;
@@ -346,11 +338,11 @@ extern enum mbstatus_e mbfn_read_write_regs(
 		return MB_ILLEGAL_DATA_VAL;
 	}
 
-	read_start_addr = betou16(req+1);
-	n_read_regs = betou16(req+3);
+	read_start_addr = betou16(req+1u);
+	n_read_regs = betou16(req+3u);
 
-	write_start_addr = betou16(req+5);
-	n_write_regs = betou16(req+7);
+	write_start_addr = betou16(req+5u);
+	n_write_regs = betou16(req+7u);
 	write_byte_count = req[9];
 
 	/* Perform a dry run read to ensure this read is valid (No locks etc.) */
@@ -361,7 +353,7 @@ extern enum mbstatus_e mbfn_read_write_regs(
 		read_start_addr,
 		n_read_regs,
 		NULL, /* Dry run */
-		1); /* is_hold_reg = 1 since function 0x17 operates on holding registers */
+		1); /* is_hold_reg = 1 since function 0x17 only operates on holding registers */
 	if (status != MB_OK) {
 		return status;
 	}
@@ -374,7 +366,7 @@ extern enum mbstatus_e mbfn_read_write_regs(
 		write_start_addr,
 		n_write_regs,
 		write_byte_count,
-		req+10,
+		req+10u,
 		NULL); /* No response needed for write part */
 	if (status != MB_OK) {
 		return status;
@@ -388,5 +380,5 @@ extern enum mbstatus_e mbfn_read_write_regs(
 		read_start_addr,
 		n_read_regs,
 		res,
-		1); /* is_hold_reg = 1 since function 0x17 operates on holding registers */
+		1); /* is_hold_reg = 1 since function 0x17 only operates on holding registers */
 }

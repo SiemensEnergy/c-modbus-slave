@@ -139,7 +139,7 @@ struct mbcoil_desc_s {
 		 * @note Return value is automatically normalized to 0 or 1
 		 * @note Should be fast and non-blocking
 		 */
-		uint8_t (*fn)(void);
+		int (*fn)(void);
 	} read;
 
 	/**

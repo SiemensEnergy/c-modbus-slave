@@ -29,20 +29,21 @@
  */
 
 #include "mbsupp.h"
+#include <stdint.h>
 
 extern uint32_t mbsupp_break_us(uint32_t baud)
 {
 	enum {
-		MICRO = 1000000, /* Seconds to microseconds */
-		BITS_IN_CHAR = 11, /* 11 bits per character (1 start + 8 data + 1 parity + 1 stop) */
-		BREAK_CHARS = 35, /* Minimum 3.5 character times for frame detection */
-		BREAK_CHARS_SCALE = 10,
+		MICRO = 1000000u, /* Seconds to microseconds */
+		BITS_IN_CHAR = 11u, /* 11 bits per character (1 start + 8 data + 1 parity + 1 stop) */
+		BREAK_CHARS = 35u, /* Minimum 3.5 character times for frame detection */
+		BREAK_CHARS_SCALE = 10u,
 		BREAK_TIME_NUMERATOR = MICRO * BITS_IN_CHAR * BREAK_CHARS / BREAK_CHARS_SCALE,
 	};
 
 	/* It is recommended to keep break time above 1.75ms regardless of baud rate */
-	enum {MIN_BREAK_TIME_US = 1750};
+	enum {MIN_BREAK_TIME_US = 1750u};
 
 	uint32_t break_us = BREAK_TIME_NUMERATOR / baud;
-	return break_us > MIN_BREAK_TIME_US ? break_us : MIN_BREAK_TIME_US;
+	return (break_us > MIN_BREAK_TIME_US) ? break_us : MIN_BREAK_TIME_US;
 }
