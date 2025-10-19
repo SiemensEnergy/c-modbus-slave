@@ -2,6 +2,9 @@
  * @file endian.c
  * @brief Implementation of endian conversion utilities
  * @author Jonas Almås
+ *
+ * MISRA Deviations:
+ * - Rule 11.3: A conversion shall not be performed between a pointer to object type and a pointer to a different object type
  */
 
 /*

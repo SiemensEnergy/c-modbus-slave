@@ -2,6 +2,11 @@
  * @file mbadu.c
  * @brief Implementation of Modbus Serial Application Data Unit handling
  * @author Jonas Almås
+ *
+ * MISRA Deviations:
+ * - Rule 14.4: The controlling expression of an if statement and the controlling expression of an iteration-statement shall have essentially Boolean type
+ * - Rule 15.5: A function should have a single point of exit at the end
+ * - Rule 18.4: The +, -, += and -= operators should not be applied to an expression of pointer type
  */
 
 /*

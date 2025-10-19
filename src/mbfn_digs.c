@@ -2,6 +2,14 @@
  * @file mbfn_digs.c
  * @brief Implementation of Modbus diagnostic function handlers
  * @author Jonas Almås
+ *
+ * MISRA Deviations:
+ * - Rule 10.8: The value of a composite expression shall not be cast to a different essential type category or a wider essential type
+ * - Rule 12.3: The comma operator should not be used
+ * - Rule 13.3: A full expression containing an increment (++) or decrement (--) operator should have no other potential side effects other than that caused by the increment or decrement
+ * - Rule 14.4: The controlling expression of an if statement and the controlling expression of an iteration-statement shall have essentially Boolean type
+ * - Rule 15.5: A function should have a single point of exit at the end
+ * - Rule 18.4: The +, -, += and -= operators should not be applied to an expression of pointer type
  */
 
 /*

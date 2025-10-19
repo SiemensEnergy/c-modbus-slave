@@ -2,6 +2,13 @@
  * @file mbcoil.c
  * @brief Implementation of Modbus coil handling functions
  * @author Jonas Almås
+ *
+ * MISRA Deviations:
+ * - Rule 10.1: Operands shall not be of an inappropriate essential type
+ * - Rule 12.3: The comma operator should not be used
+ * - Rule 14.4: The controlling expression of an if statement and the controlling expression of an iteration-statement shall have essentially Boolean type
+ * - Rule 15.5: A function should have a single point of exit at the end
+ * - Rule 18.4: The +, -, += and -= operators should not be applied to an expression of pointer type
  */
 
 /*
@@ -87,7 +94,7 @@ extern int mbcoil_read(const struct mbcoil_desc_s *coil)
 		return !!coil->read.val;
 	case MCACC_R_PTR:
 		return (coil->read.ptr && (coil->read.ix<8u))
-			? !!((*coil->read.ptr) & (1<<coil->read.ix))
+			? (!!(*coil->read.ptr & (1u<<coil->read.ix)))
 			: MBCOIL_READ_DEV_FAIL;
 	case MCACC_R_FN:
 		return coil->read.fn
@@ -118,9 +125,9 @@ extern enum mbstatus_e mbcoil_write(const struct mbcoil_desc_s *coil, uint8_t va
 	case MCACC_W_PTR:
 		if (!coil->write.ptr || (coil->write.ix>7u)) return MB_DEV_FAIL;
 		if (value) {
-			*coil->write.ptr |= 1<<coil->write.ix;
+			*coil->write.ptr |= (uint8_t)(1u<<coil->write.ix);
 		} else {
-			*coil->write.ptr &= ~(1<<coil->write.ix);
+			*coil->write.ptr &= (uint8_t)(~(1u<<coil->write.ix));
 		}
 		return MB_OK;
 	case MCACC_W_FN:

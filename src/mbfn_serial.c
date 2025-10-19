@@ -2,6 +2,9 @@
  * @file mbfn_serial.c
  * @brief Implementation of Modbus serial-specific function handlers
  * @author Jonas Almås
+ *
+ * MISRA Deviations:
+ * - Rule 15.5: A function should have a single point of exit at the end
  */
 
 /*

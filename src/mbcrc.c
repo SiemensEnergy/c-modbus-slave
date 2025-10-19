@@ -2,6 +2,10 @@
  * @file mbcrc.c
  * @brief Implementation of Modbus CRC-16 calculation
  * @author Jonas Almås
+ *
+ * MISRA Deviations:
+ * - Rule 8.9: An object should be declared at block scope if its identifier only appears in a single function
+ * - Rule 15.5: A function should have a single point of exit at the end
  */
 
 /*

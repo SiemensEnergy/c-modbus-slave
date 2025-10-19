@@ -2,6 +2,14 @@
  * @file mbfn_coils.c
  * @brief Implementation of Modbus coil function handlers
  * @author Jonas Almås
+ *
+ * MISRA Deviations:
+ * - Rule 12.1: The precedence of operators within expressions should be made explicit
+ * - Rule 12.3: The comma operator should not be used
+ * - Rule 13.4: The result of an assignment operator should not be used
+ * - Rule 14.4: The controlling expression of an if statement and the controlling expression of an iteration-statement shall have essentially Boolean type
+ * - Rule 15.5: A function should have a single point of exit at the end
+ * - Rule 18.4: The +, -, += and -= operators should not be applied to an expression of pointer type
  */
 
 /*
@@ -81,9 +89,9 @@ extern enum mbstatus_e mbfn_read_coils(
 
 	byte_count = (uint8_t)((quantity + 7u) / 8u);
 	res->p[1] = byte_count;
-	res->size = 2u + byte_count;
+	res->size = 2u + (size_t)byte_count;
 
-	memset(res->p+2u, 0, byte_count); /* Clear all response bytes */
+	(void)memset(res->p+2u, 0, byte_count); /* Clear all response bytes */
 
 	/* Read coils */
 	for (i=0u; i<quantity; ++i) {
@@ -92,7 +100,7 @@ extern enum mbstatus_e mbfn_read_coils(
 			switch (mbcoil_read(coil)) {
 			case MBCOIL_READ_OFF: break;
 			case MBCOIL_READ_ON:
-				res->p[2u + i/8u] |= (uint8_t)(1<<(i%8));
+				res->p[2u + i/8u] |= (uint8_t)(1u<<(i%8u));
 				break;
 			case MBCOIL_READ_LOCKED: return MB_ILLEGAL_DATA_ADDR;
 			case MBCOIL_READ_NO_ACCESS: break; /* Leave coils without read access as 0 */
@@ -134,7 +142,7 @@ extern enum mbstatus_e mbfn_write_coil(
 	coil_value = betou16(req+3u);
 
 	/* Validate coil value (must be 0x0000 or 0xFF00) */
-	if (coil_value != MBCOIL_OFF && coil_value != MBCOIL_ON) {
+	if ((coil_value != MBCOIL_OFF) && (coil_value != MBCOIL_ON)) {
 		return MB_ILLEGAL_DATA_VAL;
 	}
 
@@ -230,7 +238,7 @@ extern enum mbstatus_e mbfn_write_coils(
 		addr = start_addr + (uint16_t)i;
 		coil = mbcoil_find_desc(coils, n_coils, addr);
 
-		status = mbcoil_write(coil, !!(req[6u + i/8u] & (uint8_t)(1<<(i%8))));
+		status = mbcoil_write(coil, !!(req[6u + i/8u] & (uint8_t)(1u<<(i%8u))));
 		if (status!=MB_OK) {
 			return status;
 		}
