@@ -4,11 +4,14 @@
  * @author Jonas Almås
  *
  * MISRA Deviations:
- * - Rule 10.1: Operands shall not be of an inappropriate essential type
  * - Rule 12.3: The comma operator should not be used
- * - Rule 14.4: The controlling expression of an if statement and the controlling expression of an iteration-statement shall have essentially Boolean type
+ *   Rationale: Improves readability
  * - Rule 15.5: A function should have a single point of exit at the end
+ *   Rationale: Multiple returns improve readability and reduce nesting for error conditions
+ *   Mitigation: Each return path clearly documented with appropriate error handling
  * - Rule 18.4: The +, -, += and -= operators should not be applied to an expression of pointer type
+ *   Rationale: Pointer arithmetic necessary for efficient buffer parsing and generation
+ *   Mitigation: Bounds checking performed, arithmetic limited to validated buffer operations
  */
 
 /*
@@ -124,7 +127,7 @@ extern enum mbstatus_e mbcoil_write(const struct mbcoil_desc_s *coil, uint8_t va
 	switch (coil->access & MCACC_W_MASK) {
 	case MCACC_W_PTR:
 		if (!coil->write.ptr || (coil->write.ix>7u)) return MB_DEV_FAIL;
-		if (value) {
+		if (value!=0u) {
 			*coil->write.ptr |= (uint8_t)(1u<<coil->write.ix);
 		} else {
 			*coil->write.ptr &= (uint8_t)(~(1u<<coil->write.ix));

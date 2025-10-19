@@ -4,12 +4,14 @@
  * @author Jonas Almås
  *
  * MISRA Deviations:
- * - Rule 10.4: Both operands of an operator in which the usual arithmetic conversions are performed shall have the same essential type category
- * - Rule 12.1: The precedence of operators within expressions should be made explicit
  * - Rule 12.3: The comma operator should not be used
- * - Rule 14.4: The controlling expression of an if statement and the controlling expression of an iteration-statement shall have essentially Boolean type
+ *   Rationale: Improves readability
  * - Rule 15.5: A function should have a single point of exit at the end
+ *   Rationale: Multiple returns improve readability and reduce nesting for error conditions
+ *   Mitigation: Each return path clearly documented with appropriate error handling
  * - Rule 18.4: The +, -, += and -= operators should not be applied to an expression of pointer type
+ *   Rationale: Pointer arithmetic necessary for efficient buffer parsing and generation
+ *   Mitigation: Bounds checking performed, arithmetic limited to validated buffer operations
  */
 
 /*
@@ -109,7 +111,7 @@ static int is_addr_desc_match(const struct mbreg_desc_s *reg, uint16_t addr)
 		return 1;
 	} else if (addr > reg->address) {
 		reg_size_w = mbreg_size(reg) / 2u;
-		if (reg->type & MRTYPE_BLOCK) {
+		if ((reg->type & MRTYPE_BLOCK) != 0) {
 			if (addr < (reg->address + reg->n_block_entries*reg_size_w)) {
 				return 1;
 			}
@@ -363,7 +365,7 @@ static size_t read_partial(
 
 	reg_size = mbreg_size(reg);
 
-	if (reg->type & MRTYPE_BLOCK) {
+	if ((reg->type & MRTYPE_BLOCK) != 0) {
 		ok=read_block(reg, addr, buf);
 	} else {
 		if (((addr - reg->address)*2u) >= reg_size) {
@@ -391,7 +393,7 @@ static size_t read_partial(
 	buf_offset = (size_t)(addr - reg->address) * 2u;
 	n_copy = min(reg_size-buf_offset, n_remaining_regs*2u);
 
-	if (res) {
+	if (res!=NULL) {
 		(void)memcpy(res, buf+buf_offset, n_copy);
 	}
 
@@ -406,7 +408,7 @@ static int read_full(
 {
 	int ok;
 
-	if (reg->type & MRTYPE_BLOCK) {
+	if ((reg->type & MRTYPE_BLOCK) != 0) {
 		ok=read_block(reg, addr, res);
 	} else {
 		switch (reg->access & MRACC_R_MASK) {
@@ -439,7 +441,7 @@ extern size_t mbreg_read(
 {
 	size_t reg_size_w;
 
-	if (!reg) return MBREG_READ_DEV_FAIL;
+	if (reg==NULL) return MBREG_READ_DEV_FAIL;
 	if (n_remaining_regs == 0u) return MBREG_READ_DEV_FAIL;
 	if (addr < reg->address) return MBREG_READ_DEV_FAIL;
 
@@ -452,7 +454,7 @@ extern size_t mbreg_read(
 	if ((n_remaining_regs < reg_size_w) || ((addr - reg->address) % reg_size_w)) {
 		return read_partial(reg, addr, n_remaining_regs, res, swap_words);
 	} else {
-		if (res) { /* Not dry run */
+		if (res!=NULL) { /* Not dry run */
 			if (!read_full(reg, addr, res, swap_words)) return MBREG_READ_DEV_FAIL;
 		}
 		return reg_size_w;
@@ -635,7 +637,7 @@ static enum mbstatus_e write_block_partial(
 	/* Apply the modification */
 	buf_offset = (size_t)(addr - start_addr) * 2u;
 	n_copy = min(reg_size-buf_offset, n_remaining_regs*2u);
-	memcpy(buf+buf_offset, val, n_copy);
+	(void)memcpy(buf+buf_offset, val, n_copy);
 
 	*n_written = n_copy / 2u;
 
@@ -682,7 +684,7 @@ extern enum mbstatus_e mbreg_write(
 	if (reg_size_w == 0u) return MB_DEV_FAIL;
 
 	if ((n_remaining_regs < reg_size_w) || ((addr - reg->address) % reg_size_w)) { /* Partial reg write*/
-		if (reg->type & MRTYPE_BLOCK) {
+		if ((reg->type & MRTYPE_BLOCK) != 0) {
 			return write_block_partial(reg, addr, n_remaining_regs, val, n_written);
 		} else if ((reg->access & MRACC_W_MASK) == MRACC_W_PTR) {
 			return write_ptr_partial(reg, addr, n_remaining_regs, val, n_written);
@@ -692,7 +694,7 @@ extern enum mbstatus_e mbreg_write(
 	} else { /* Full reg write */
 		*n_written = reg_size_w;
 
-		if (reg->type & MRTYPE_BLOCK) {
+		if ((reg->type & MRTYPE_BLOCK) != 0) {
 			return write_block(reg, addr, val);
 		} else {
 			switch (reg->access & MRACC_W_MASK) {

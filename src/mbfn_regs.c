@@ -4,13 +4,21 @@
  * @author Jonas Almås
  *
  * MISRA Deviations:
- * - Rule 12.1: The precedence of operators within expressions should be made explicit
  * - Rule 12.3: The comma operator should not be used
+ *   Rationale: Improves readability
  * - Rule 13.4: The result of an assignment operator should not be used
+ *   Rationale: Improves readability
+ *   Mitigation: Parentheses used to clarify intent
  * - Rule 14.2: A for loop shall be well-formed
- * - Rule 14.4: The controlling expression of an if statement and the controlling expression of an iteration-statement shall have essentially Boolean type
+ *   Rationale: Complex loop conditions necessary for protocol buffer parsing
+ *   Mitigation: Loop variables properly initialized and bounds checked
  * - Rule 15.5: A function should have a single point of exit at the end
+ *   Rationale: Multiple returns improve readability and reduce nesting for error conditions
+ * - Rule 15.7: All if … else if constructs shall be terminated with an else statement
+ *   Rationale: Improves readability
  * - Rule 18.4: The +, -, += and -= operators should not be applied to an expression of pointer type
+ *   Rationale: Pointer arithmetic necessary for efficient protocol buffer operations
+ *   Mitigation: Bounds checking performed, arithmetic limited to safe operations
  */
 
 /*
@@ -73,7 +81,7 @@ static enum mbstatus_e read_regs(
 		return MB_ILLEGAL_DATA_ADDR;
 	}
 
-	if (res) {
+	if (res!=NULL) {
 		res->p[1] = (uint8_t)(2u * n_req_regs); /* Byte count */
 		res->size = 2u;
 	}
@@ -81,7 +89,7 @@ static enum mbstatus_e read_regs(
 	/* Read register value into response data */
 	for (reg_offs=0u; reg_offs < n_req_regs; ) {
 		addr = start_addr + reg_offs;
-		if ((reg = mbreg_find_desc(regs, n_regs, addr))) {
+		if ((reg = mbreg_find_desc(regs, n_regs, addr)) != NULL) {
 			n_read_regs = mbreg_read(
 				reg,
 				addr,
@@ -93,12 +101,12 @@ static enum mbstatus_e read_regs(
 			} else if (n_read_regs==MBREG_READ_LOCKED) {
 				return MB_ILLEGAL_DATA_ADDR;
 			} else if (n_read_regs!=MBREG_READ_NO_ACCESS) {
-				if (res) {res->size += n_read_regs*2u;}
+				if (res!=NULL) {res->size += n_read_regs*2u;}
 			}
 
 			reg_offs += (uint16_t)n_read_regs;
 		} else {
-			if (res) {
+			if (res!=NULL) {
 				res->p[res->size] = 0x00u;
 				res->p[res->size+1u] = 0x00u;
 				res->size += 2u;
@@ -137,7 +145,7 @@ static enum mbstatus_e write_regs(
 	/* Ensure all registers exist and can be written to before writing anything */
 	for (reg_offs=0u; reg_offs < n_req_regs; ) {
 		addr = start_addr + reg_offs;
-		if (!(reg = mbreg_find_desc(regs, n_regs, addr))) {
+		if ((reg = mbreg_find_desc(regs, n_regs, addr)) == NULL) {
 			return MB_ILLEGAL_DATA_ADDR;
 		}
 
@@ -146,7 +154,7 @@ static enum mbstatus_e write_regs(
 			addr,
 			start_addr,
 			n_req_regs-reg_offs,
-			req_write_data + reg_offs*2u);
+			req_write_data + (reg_offs*2u));
 		if (n_regs_written == 0u) {
 			return MB_ILLEGAL_DATA_ADDR;
 		}
@@ -165,12 +173,12 @@ static enum mbstatus_e write_regs(
 			reg,
 			addr,
 			n_req_regs-reg_offs,
-			req_write_data + reg_offs*2u,
+			req_write_data + (reg_offs*2u),
 			&n_regs_written);
 		if (status!=MB_OK) return status;
 		if (n_regs_written==0u) return MB_DEV_FAIL;
 
-		if (reg->post_write_cb) {
+		if (reg->post_write_cb!=NULL) {
 			reg->post_write_cb();
 		}
 
@@ -179,12 +187,12 @@ static enum mbstatus_e write_regs(
 		reg_offs += (uint16_t)n_regs_written;
 	}
 
-	if (inst->commit_regs_write_cb) {
+	if (inst->commit_regs_write_cb!=NULL) {
 		inst->commit_regs_write_cb(inst);
 	}
 
 	/* Prepare response */
-	if (res) {
+	if (res!=NULL) {
 		u16tobe(start_addr, res->p+1u);
 		u16tobe(n_req_regs, res->p+3u);
 		res->size = 5u;
@@ -203,7 +211,7 @@ extern enum mbstatus_e mbfn_read_regs(
 {
 	uint16_t start_addr, n_req_regs;
 
-	if (!inst || !regs || !req || !res) return MB_DEV_FAIL;
+	if ((inst==NULL) || (regs==NULL) || (req==NULL) || (res==NULL)) return MB_DEV_FAIL;
 
 	if ((req[0]!=MBFC_READ_HOLDING_REGS) && (req[0]!=MBFC_READ_INPUT_REGS)) {
 		return MB_DEV_FAIL;
@@ -239,7 +247,7 @@ extern enum mbstatus_e mbfn_write_reg(
 	size_t n_written;
 	uint16_t addr;
 
-	if (!inst || !regs || !req || !res) return MB_DEV_FAIL;
+	if ((inst==NULL) || (regs==NULL) || (req==NULL) || (res==NULL)) return MB_DEV_FAIL;
 
 	if (req[0]!=MBFC_WRITE_SINGLE_REG) {
 		return MB_DEV_FAIL;
@@ -251,7 +259,7 @@ extern enum mbstatus_e mbfn_write_reg(
 
 	addr = betou16(req+1u);
 
-	if (!(reg = mbreg_find_desc(regs, n_regs, addr))) {
+	if ((reg = mbreg_find_desc(regs, n_regs, addr)) == NULL) {
 		return MB_ILLEGAL_DATA_ADDR;
 	}
 
@@ -263,10 +271,10 @@ extern enum mbstatus_e mbfn_write_reg(
 	if (status!=MB_OK) return status;
 	if (n_written!=1u) return MB_DEV_FAIL;
 
-	if (reg->post_write_cb) {
+	if (reg->post_write_cb!=NULL) {
 		reg->post_write_cb();
 	}
-	if (inst->commit_regs_write_cb) {
+	if (inst->commit_regs_write_cb!=NULL) {
 		inst->commit_regs_write_cb(inst);
 	}
 
@@ -291,7 +299,7 @@ extern enum mbstatus_e mbfn_write_regs(
 	uint16_t start_addr, n_req_regs;
 	uint8_t byte_count;
 
-	if (!inst || !regs || !req || !res) return MB_DEV_FAIL;
+	if ((inst==NULL) || (regs==NULL) || (req==NULL) || (res==NULL)) return MB_DEV_FAIL;
 
 	if (req[0]!=MBFC_WRITE_MULTIPLE_REGS) {
 		return MB_DEV_FAIL;
@@ -335,7 +343,7 @@ extern enum mbstatus_e mbfn_read_write_regs(
 	uint16_t write_start_addr, n_write_regs;
 	uint8_t write_byte_count;
 
-	if (!inst || !regs || !req || !res) return MB_DEV_FAIL;
+	if ((inst==NULL) || (regs==NULL) || (req==NULL) || (res==NULL)) return MB_DEV_FAIL;
 
 	if (req[0]!=MBFC_READ_WRITE_REGS) {
 		return MB_DEV_FAIL;

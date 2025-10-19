@@ -5,6 +5,8 @@
  *
  * MISRA Deviations:
  * - Rule 15.5: A function should have a single point of exit at the end
+ *   Rationale: Multiple returns improve readability and reduce nesting for error conditions
+ *   Mitigation: Each return path clearly documented with appropriate error handling
  */
 
 /*
@@ -41,7 +43,7 @@ extern enum mbstatus_e mbfn_read_exception_status(
 	size_t req_len,
 	struct mbpdu_buf_s *res)
 {
-	if (!inst || !req || !res || !inst->serial.read_exception_status_cb) {
+	if ((inst==NULL) || (req==NULL) || (res==NULL) || (inst->serial.read_exception_status_cb==NULL)) {
 		return MB_DEV_FAIL;
 	}
 

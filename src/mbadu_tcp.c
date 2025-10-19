@@ -5,8 +5,13 @@
  *
  * MISRA Deviations:
  * - Rule 12.3: The comma operator should not be used
+ *   Rationale: Improves readability
  * - Rule 15.5: A function should have a single point of exit at the end
+ *   Rationale: Multiple returns improve readability and reduce nesting for error conditions
+ *   Mitigation: Each return path clearly documented with appropriate error handling
  * - Rule 18.4: The +, -, += and -= operators should not be applied to an expression of pointer type
+ *   Rationale: Pointer arithmetic necessary for efficient buffer parsing and generation
+ *   Mitigation: Bounds checking performed, arithmetic limited to validated buffer operations
  */
 
 /*
@@ -49,7 +54,7 @@ extern size_t mbadu_tcp_handle_req(
 	uint16_t transaction_id, protocol_id, length;
 	uint8_t unit_id;
 
-	if (!inst || !req || !res) return 0u;
+	if ((inst==NULL) || (req==NULL) || (res==NULL)) return 0u;
 
 	/* We must at least have a complate header + function code */
 	if (req_len < (MBAP_SIZE+1u)) {

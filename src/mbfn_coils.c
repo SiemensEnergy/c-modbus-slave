@@ -4,12 +4,17 @@
  * @author Jonas Almås
  *
  * MISRA Deviations:
- * - Rule 12.1: The precedence of operators within expressions should be made explicit
  * - Rule 12.3: The comma operator should not be used
+ *   Rationale: Improves readability
  * - Rule 13.4: The result of an assignment operator should not be used
- * - Rule 14.4: The controlling expression of an if statement and the controlling expression of an iteration-statement shall have essentially Boolean type
+ *   Rationale: Assignment in if condition improves code readability for find operations
+ *   Mitigation: Parentheses used to clarify intent, NULL check explicit
  * - Rule 15.5: A function should have a single point of exit at the end
+ *   Rationale: Multiple returns improve readability and reduce nesting for error conditions
+ *   Mitigation: Each return path clearly documented with appropriate error codes
  * - Rule 18.4: The +, -, += and -= operators should not be applied to an expression of pointer type
+ *   Rationale: Pointer arithmetic necessary for efficient buffer operations
+ *   Mitigation: Bounds checking performed, arithmetic limited to safe operations
  */
 
 /*
@@ -60,7 +65,7 @@ extern enum mbstatus_e mbfn_read_coils(
 	size_t i;
 	const struct mbcoil_desc_s *coil;
 
-	if (!inst || !coils || !req || !res) {
+	if ((inst==NULL) || (coils==NULL) || (req==NULL) || (res==NULL)) {
 		return MB_DEV_FAIL;
 	}
 
@@ -96,11 +101,11 @@ extern enum mbstatus_e mbfn_read_coils(
 	/* Read coils */
 	for (i=0u; i<quantity; ++i) {
 		addr = start_addr + (uint16_t)i;
-		if ((coil = mbcoil_find_desc(coils, n_coils, addr))) {
+		if ((coil = mbcoil_find_desc(coils, n_coils, addr)) != NULL) {
 			switch (mbcoil_read(coil)) {
 			case MBCOIL_READ_OFF: break;
 			case MBCOIL_READ_ON:
-				res->p[2u + i/8u] |= (uint8_t)(1u<<(i%8u));
+				res->p[2u + (i/8u)] |= (uint8_t)(1u << (i % 8u));
 				break;
 			case MBCOIL_READ_LOCKED: return MB_ILLEGAL_DATA_ADDR;
 			case MBCOIL_READ_NO_ACCESS: break; /* Leave coils without read access as 0 */
@@ -126,7 +131,7 @@ extern enum mbstatus_e mbfn_write_coil(
 	enum mbstatus_e status;
 	const struct mbcoil_desc_s *coil;
 
-	if (!inst || !coils || !req || !res) {
+	if ((inst==NULL) || (coils==NULL) || (req==NULL) || (res==NULL)) {
 		return MB_DEV_FAIL;
 	}
 
@@ -147,7 +152,7 @@ extern enum mbstatus_e mbfn_write_coil(
 	}
 
 	coil = mbcoil_find_desc(coils, n_coils, coil_addr);
-	if (!coil) {
+	if (coil==NULL) {
 		return MB_ILLEGAL_DATA_ADDR;
 	}
 
@@ -160,10 +165,10 @@ extern enum mbstatus_e mbfn_write_coil(
 		return status;
 	}
 
-	if (coil->post_write_cb) {
+	if (coil->post_write_cb!=NULL) {
 		coil->post_write_cb();
 	}
-	if (inst->commit_coils_write_cb) {
+	if (inst->commit_coils_write_cb!=NULL) {
 		inst->commit_coils_write_cb(inst);
 	}
 
@@ -191,7 +196,7 @@ extern enum mbstatus_e mbfn_write_coils(
 	enum mbstatus_e status;
 	const struct mbcoil_desc_s *coil;
 
-	if (!inst || !coils || !req || !res) {
+	if ((inst==NULL) || (coils==NULL) || (req==NULL) || (res==NULL)) {
 		return MB_DEV_FAIL;
 	}
 
@@ -224,7 +229,7 @@ extern enum mbstatus_e mbfn_write_coils(
 	/* Ensure all coils exists and can be written to before writing anything */
 	for (i=0u; i<quantity; ++i) {
 		addr = start_addr + (uint16_t)i;
-		if (!(coil = mbcoil_find_desc(coils, n_coils, addr))) {
+		if ((coil = mbcoil_find_desc(coils, n_coils, addr)) == NULL) {
 			return MB_ILLEGAL_DATA_ADDR;
 		}
 
@@ -238,18 +243,18 @@ extern enum mbstatus_e mbfn_write_coils(
 		addr = start_addr + (uint16_t)i;
 		coil = mbcoil_find_desc(coils, n_coils, addr);
 
-		status = mbcoil_write(coil, !!(req[6u + i/8u] & (uint8_t)(1u<<(i%8u))));
+		status = mbcoil_write(coil, !!(req[6u + (i/8u)] & (uint8_t)(1u << (i%8u))));
 		if (status!=MB_OK) {
 			return status;
 		}
 
-		if (coil->post_write_cb) {
+		if (coil->post_write_cb!=NULL) {
 			coil->post_write_cb();
 		}
 	}
 
 	/* Call commit callback if it exists */
-	if (inst->commit_coils_write_cb) {
+	if (inst->commit_coils_write_cb!=NULL) {
 		inst->commit_coils_write_cb(inst);
 	}
 

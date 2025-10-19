@@ -4,8 +4,8 @@
  * @author Jonas Almås
  *
  * MISRA Deviations:
- * - Rule 14.4: The controlling expression of an if statement and the controlling expression of an iteration-statement shall have essentially Boolean type
  * - Rule 15.5: A function should have a single point of exit at the end
+ *   Rationale: Multiple returns improve readability and reduce nesting
  */
 
 /*
@@ -50,57 +50,67 @@ static enum mbstatus_e handle(
 {
 	switch (req[0]) {
 	case MBFC_READ_COILS:
-		if (inst->coils)
+		if (inst->coils!=NULL) {
 			return mbfn_read_coils(inst, inst->coils, inst->n_coils, req, req_len, res);
+		}
 		break;
 	case MBFC_READ_DISC_INPUTS:
-		if (inst->disc_inputs)
+		if (inst->disc_inputs!=NULL) {
 			return mbfn_read_coils(inst, inst->disc_inputs, inst->n_disc_inputs, req, req_len, res);
+		}
 		break;
 	case MBFC_READ_HOLDING_REGS:
-		if (inst->hold_regs)
+		if (inst->hold_regs!=NULL) {
 			return mbfn_read_regs(inst, inst->hold_regs, inst->n_hold_regs, req, req_len, res);
+		}
 		break;
 	case MBFC_READ_INPUT_REGS:
-		if (inst->input_regs)
+		if (inst->input_regs!=NULL) {
 			return mbfn_read_regs(inst, inst->input_regs, inst->n_input_regs, req, req_len, res);
+		}
 		break;
 	case MBFC_WRITE_SINGLE_COIL:
-		if (inst->coils)
+		if (inst->coils!=NULL) {
 			return mbfn_write_coil(inst, inst->coils, inst->n_coils, req, req_len, res);
+		}
 		break;
 	case MBFC_WRITE_SINGLE_REG:
-		if (inst->hold_regs)
+		if (inst->hold_regs!=NULL) {
 			return mbfn_write_reg(inst, inst->hold_regs, inst->n_hold_regs, req, req_len, res);
+		}
 		break;
 	case MBFC_READ_EXCEPTION_STATUS:
-		if (inst->serial.read_exception_status_cb)
+		if (inst->serial.read_exception_status_cb!=NULL) {
 			return mbfn_read_exception_status(inst, req, req_len, res);
+		}
 		break;
 	case MBFC_DIAGNOSTICS: return mbfn_digs(inst, req, req_len, res);
 	case MBFC_COMM_EVENT_COUNTER: return mbfn_comm_event_counter(inst, req, req_len, res);
 	case MBFC_COMM_EVENT_LOG: return mbfn_comm_event_log(inst, req, req_len, res);
 	case MBFC_WRITE_MULTIPLE_COILS:
-		if (inst->coils)
+		if (inst->coils!=NULL) {
 			return mbfn_write_coils(inst, inst->coils, inst->n_coils, req, req_len, res);
+		}
 		break;
 	case MBFC_WRITE_MULTIPLE_REGS:
-		if (inst->hold_regs)
+		if (inst->hold_regs!=NULL) {
 			return mbfn_write_regs(inst, inst->hold_regs, inst->n_hold_regs, req, req_len, res);
+		}
 		break;
 	case MBFC_REPORT_SLAVE_ID: break; /* Should be implemented through mbinst_s::handle_fn_cb */
 	case MBFC_READ_FILE_RECORD: break; /* Not implemented */
 	case MBFC_WRITE_FILE_RECORD: break; /* Not implemented */
 	case MBFC_MASK_WRITE_REG: break; /* Not implemented */
 	case MBFC_READ_WRITE_REGS:
-		if (inst->hold_regs)
+		if (inst->hold_regs!=NULL) {
 			return mbfn_read_write_regs(inst, inst->hold_regs, inst->n_hold_regs, req, req_len, res);
+		}
 		break;
 	case MBFC_READ_FIFO_QUEUE: break; /* Not implemented */
 	default: break;
 	}
 
-	if (inst->handle_fn_cb) {
+	if (inst->handle_fn_cb!=NULL) {
 		return inst->handle_fn_cb(inst, req, req_len, res);
 	} else {
 		return MB_ILLEGAL_FN;
@@ -118,7 +128,8 @@ extern size_t mbpdu_handle_req(
 	enum mbstatus_e status;
 	struct mbpdu_buf_s res_pdu;
 
-	if (!inst || !req || !res || (req_len<1u)) return 0u;
+	if ((inst==NULL) || (req==NULL) || (res==NULL)) return 0u;
+	if (req_len<1u) return 0u;
 
 	send_event = MB_COMM_EVENT_IS_SEND;
 
@@ -166,7 +177,7 @@ extern size_t mbpdu_handle_req(
 
 	/* Listen only mode changes "takes effect" after the response is sent,
 	   therefore we report the state as before handling the request. */
-	if (was_listen_only) {send_event |= MB_COMM_EVENT_SEND_LISTEN_ONLY;}
+	if (was_listen_only != 0) {send_event |= MB_COMM_EVENT_SEND_LISTEN_ONLY;}
 	mb_add_comm_event(inst, send_event);
 
 	/* Increment diagnostic counters */

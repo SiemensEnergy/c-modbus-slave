@@ -5,6 +5,8 @@
  *
  * MISRA Deviations:
  * - Rule 11.3: A conversion shall not be performed between a pointer to object type and a pointer to a different object type
+ *   Rationale: Essential for endian conversion in protocol implementation
+ *   Mitigation: Type conversions are explicit and validated
  */
 
 /*

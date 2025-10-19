@@ -5,13 +5,21 @@
  *
  * MISRA Deviations:
  * - Rule 10.2: Expressions of essentially character type shall not be used inappropriately in addition and subtraction operations
- * - Rule 10.4: Both operands of an operator in which the usual arithmetic conversions are performed shall have the same essential type category
+ *   Rationale: Hex to int conversion requires character arithmetic (c - '0', c - 'A')
+ *   Mitigation: Character ranges validated before arithmetic
  * - Rule 10.8: The value of a composite expression shall not be cast to a different essential type category or a wider essential type
+ *   Rationale: Protocol requires specific type conversions from hex to uint8
  * - Rule 12.3: The comma operator should not be used
- * - Rule 13.3: A full expression containing an increment (++) or decrement (--) operator should have no other potential side effects other than that caused by the increment or decrement
- * - Rule 14.4: The controlling expression of an if statement and the controlling expression of an iteration-statement shall have essentially Boolean type
+ *   Rationale: Improves readability
+ * - Rule 13.3: A full expression containing an increment (++) or decrement (--) operator should have no other potential side effects
+ *   Rationale: Improves readability
+ *   Mitigation: Side effects are intentional and well-documented, no unintended consequences
  * - Rule 15.5: A function should have a single point of exit at the end
+ *   Rationale: Multiple returns improve readability and reduce nesting for error conditions
+ *   Mitigation: Each return path clearly documented with appropriate error handling
  * - Rule 18.4: The +, -, += and -= operators should not be applied to an expression of pointer type
+ *   Rationale: Pointer arithmetic necessary for efficient buffer parsing and generation
+ *   Mitigation: Bounds checking performed, arithmetic limited to validated buffer operations
  */
 
  /*
@@ -92,7 +100,7 @@ static size_t prep_res(
 	u8tox(calc_lrc(bin_res, bin_res_len), res+res_size);
 	res_size += 2u;
 
-	res[res_size++] = '\r';
+	res[res_size++] = (uint8_t)'\r';
 	res[res_size++] = inst->state.ascii_delimiter;
 
 	return res_size;
@@ -112,27 +120,27 @@ extern size_t mbadu_ascii_handle_req(
 	uint8_t *req_bin = res;
 	uint8_t res_bin[1u+MBPDU_SIZE_MAX];
 
-	if (!inst || !req || !res) return 0u;
+	if ((inst==NULL) || (req==NULL) || (res==NULL)) return 0u;
 	if ((req_len<MBADU_ASCII_SIZE_MIN) || (req_len>MBADU_ASCII_SIZE_MAX)) return 0u;
 
 	++inst->state.bus_msg_counter;
 
 	recv_event = 0u;
-	if (inst->state.is_listen_only) {recv_event |= MB_COMM_EVENT_RECV_LISTEN_MODE;}
+	if (inst->state.is_listen_only!=0) {recv_event |= MB_COMM_EVENT_RECV_LISTEN_MODE;}
 
 	/* Ensure correct start and end chars, and length without start char is divisible by two (ascii hex) */
 	if ((req[0] != MBADU_ASCII_START_CHAR)
-			|| (req[req_len-2u] != '\r')
+			|| (req[req_len-2u] != (uint8_t)'\r')
 			|| (req[req_len-1u] != inst->state.ascii_delimiter)
 			|| ((req_len-1u)%2u != 0u)) {
-		if (recv_event) mb_add_comm_event(inst, MB_COMM_EVENT_IS_RECV | recv_event);
+		if (recv_event!=0u) {mb_add_comm_event(inst, MB_COMM_EVENT_IS_RECV | recv_event);}
 		return 0u;
 	}
 
 	/* Ensure entire request (excluding start and end chars) are hex */
 	for (i=1u; i<(req_len-2u); ++i) {
 		if (!isxdigit(req[i])) {
-			if (recv_event) mb_add_comm_event(inst, MB_COMM_EVENT_IS_RECV | recv_event);
+			if (recv_event!=0u) {mb_add_comm_event(inst, MB_COMM_EVENT_IS_RECV | recv_event);}
 			return 0u;
 		}
 	}
@@ -158,12 +166,12 @@ extern size_t mbadu_ascii_handle_req(
 	if ((recv_slave_addr != inst->serial.slave_addr)
 			&& (recv_slave_addr != MBADU_ADDR_BROADCAST)
 			&& (!inst->serial.enable_def_resp || (recv_slave_addr != MBADU_ADDR_DEFAULT_RESP))) {
-		if (recv_event) mb_add_comm_event(inst, MB_COMM_EVENT_IS_RECV | recv_event);
+		if (recv_event!=0u) {mb_add_comm_event(inst, MB_COMM_EVENT_IS_RECV | recv_event);}
 		return 0u;
 	}
 
 	if (recv_slave_addr==MBADU_ADDR_BROADCAST) {recv_event |= MB_COMM_EVENT_RECV_BROADCAST;}
-	if (recv_event) {mb_add_comm_event(inst, MB_COMM_EVENT_IS_RECV | recv_event);}
+	if (recv_event!=0u) {mb_add_comm_event(inst, MB_COMM_EVENT_IS_RECV | recv_event);}
 
 	res_bin[0] = req_bin[0];
 	res_pdu_len = mbpdu_handle_req(

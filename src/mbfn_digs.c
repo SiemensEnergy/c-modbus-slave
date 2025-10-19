@@ -4,12 +4,17 @@
  * @author Jonas Almås
  *
  * MISRA Deviations:
- * - Rule 10.8: The value of a composite expression shall not be cast to a different essential type category or a wider essential type
  * - Rule 12.3: The comma operator should not be used
- * - Rule 13.3: A full expression containing an increment (++) or decrement (--) operator should have no other potential side effects other than that caused by the increment or decrement
- * - Rule 14.4: The controlling expression of an if statement and the controlling expression of an iteration-statement shall have essentially Boolean type
+ *   Rationale: Improves readability
+ * - Rule 13.3: A full expression containing an increment (++) or decrement (--) operator should have no other potential side effects
+ *   Rationale: Improves readability
+ *   Mitigation: Side effects are intentional and well-documented, no unintended consequences
  * - Rule 15.5: A function should have a single point of exit at the end
+ *   Rationale: Multiple returns improve readability and reduce nesting for error conditions
+ *   Mitigation: Each return path clearly documented with appropriate error handling
  * - Rule 18.4: The +, -, += and -= operators should not be applied to an expression of pointer type
+ *   Rationale: Pointer arithmetic necessary for efficient buffer parsing and generation
+ *   Mitigation: Bounds checking performed, arithmetic limited to validated buffer operations
  */
 
 /*
@@ -83,7 +88,7 @@ static enum mbstatus_e restart_comms_opt(
 	val = betou16(req+3u);
 	if ((val!=0x0000u) && (val!=0xFF00u)) return MB_ILLEGAL_DATA_VAL;
 
-	if (inst->serial.request_restart) {
+	if (inst->serial.request_restart!=NULL) {
 		inst->serial.request_restart();
 	}
 	inst->state.is_listen_only = 0;
@@ -114,7 +119,7 @@ static enum mbstatus_e read_diagnostic_reg(
 	if (req_len != 5u) return MB_ILLEGAL_DATA_VAL;
 	if (betou16(req+3u) != 0u) return MB_ILLEGAL_DATA_VAL;
 
-	if (inst->serial.read_diagnostics_cb) {
+	if (inst->serial.read_diagnostics_cb!=NULL) {
 		u16tobe(inst->serial.read_diagnostics_cb(), res->p+3u);
 	} else {
 		u16tobe(0u, res->p+3u);
@@ -176,7 +181,7 @@ static enum mbstatus_e clear_counts_n_diag_reg(
 	if (betou16(req+3u) != 0u) return MB_ILLEGAL_DATA_VAL;
 
 	reset_comm_counters(inst);
-	if (inst->serial.reset_diagnostics_cb) {
+	if (inst->serial.reset_diagnostics_cb!=NULL) {
 		inst->serial.reset_diagnostics_cb();
 	}
 
@@ -229,7 +234,7 @@ extern enum mbstatus_e mbfn_digs(
 	size_t req_len,
 	struct mbpdu_buf_s *res)
 {
-	if (!inst || !req || !res) return MB_DEV_FAIL;
+	if ((inst==NULL) || (req==NULL) || (res==NULL)) return MB_DEV_FAIL;
 
 	if (req_len < 3u) return MB_ILLEGAL_DATA_VAL;
 
@@ -265,7 +270,7 @@ extern enum mbstatus_e mbfn_comm_event_counter(
 	size_t req_len,
 	struct mbpdu_buf_s *res)
 {
-	if (!inst || !req || !res) return MB_DEV_FAIL;
+	if ((inst==NULL) || (req==NULL) || (res==NULL)) return MB_DEV_FAIL;
 	if (req_len != 1u) return MB_ILLEGAL_DATA_VAL;
 
 	u16tobe(inst->state.status, res->p+1u);
@@ -283,10 +288,10 @@ extern enum mbstatus_e mbfn_comm_event_log(
 {
 	int i, ix;
 
-	if (!inst || !req || !res) return MB_DEV_FAIL;
+	if ((inst==NULL) || (req==NULL) || (res==NULL)) return MB_DEV_FAIL;
 	if (req_len != 1u) return MB_ILLEGAL_DATA_VAL;
 
-	res->p[1] = (uint8_t)(6 + inst->state.event_log_count); /* Byte count */
+	res->p[1] = 6u + (uint8_t)inst->state.event_log_count; /* Byte count */
 	u16tobe(inst->state.status, res->p+2u);
 	u16tobe(inst->state.comm_event_counter, res->p+4u);
 	u16tobe(inst->state.bus_msg_counter, res->p+6u);

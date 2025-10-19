@@ -4,8 +4,8 @@
  * @author Jonas Almås
  *
  * MISRA Deviations:
- * - Rule 8.9: An object should be declared at block scope if its identifier only appears in a single function
  * - Rule 15.5: A function should have a single point of exit at the end
+ *   Rationale: Multiple returns improve readability and reduce nesting for error conditions
  */
 
 /*
@@ -81,7 +81,7 @@ extern uint16_t mbcrc16(const uint8_t *data, size_t size)
 
 	crc = 0xFFFFu; /* Modbus CRC initial value */
 
-	if (!data) return crc;
+	if (data==NULL) return crc;
 
 	for (i=0u; i < size; ++i) {
 		lookup_ix = (crc ^ data[i]) & 0xFFu;
