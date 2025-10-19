@@ -12,6 +12,15 @@ Lightweight [Modbus](https://en.wikipedia.org/wiki/Modbus) slave implementation 
 - **Standards compliant** - Implements Modbus specification accurately
 - **Thread-safe** - No global state, multiple instances supported
 
+## Code Quality
+
+This project follows **MISRA C:2023** coding standards with a few documented exceptions where necessary for functionality or compatibility. The codebase emphasizes:
+
+- Static analysis compliance for safety-critical applications
+- Predictable behavior and reduced complexity
+- Enhanced portability across embedded platforms
+- Clear documentation of any standard deviations
+
 ## Prerequisites
 
 - C11 compatible compiler
