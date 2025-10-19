@@ -2,6 +2,11 @@
  * @file mbadu_tcp.c
  * @brief Implementation of Modbus TCP/IP Application Data Unit handling
  * @author Jonas Almås
+ *
+ * MISRA Deviations:
+ * - Rule 12.3: The comma operator should not be used
+ * - Rule 15.5: A function should have a single point of exit at the end
+ * - Rule 18.4: The +, -, += and -= operators should not be applied to an expression of pointer type
  */
 
 /*
@@ -63,7 +68,7 @@ extern size_t mbadu_tcp_handle_req(
 	pdu_size = mbpdu_handle_req(
 		inst,
 		req + MBAP_SIZE,
-		(size_t)(length-1u),
+		length-1u,
 		res + MBAP_SIZE);
 
 	if (pdu_size==0u) {

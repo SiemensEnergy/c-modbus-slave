@@ -9,6 +9,9 @@
  * constant values with optional runtime locking.
  *
  * @see mbinst.h for coil map integration
+ *
+ * MISRA Deviations:
+ * - Rule 19.2: The union keyword should not be used
  */
 
 /*

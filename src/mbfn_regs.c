@@ -2,6 +2,15 @@
  * @file mbfn_regs.c
  * @brief Implementation of Modbus register function handlers
  * @author Jonas Almås
+ *
+ * MISRA Deviations:
+ * - Rule 12.1: The precedence of operators within expressions should be made explicit
+ * - Rule 12.3: The comma operator should not be used
+ * - Rule 13.4: The result of an assignment operator should not be used
+ * - Rule 14.2: A for loop shall be well-formed
+ * - Rule 14.4: The controlling expression of an if statement and the controlling expression of an iteration-statement shall have essentially Boolean type
+ * - Rule 15.5: A function should have a single point of exit at the end
+ * - Rule 18.4: The +, -, += and -= operators should not be applied to an expression of pointer type
  */
 
 /*
@@ -298,7 +307,7 @@ extern enum mbstatus_e mbfn_write_regs(
 	n_req_regs = betou16(req+3u); /* Amount of 16 bit registers to write */
 	byte_count = req[5];
 
-	if (req_len-6u != byte_count) {
+	if ((req_len-6u) != byte_count) {
 		return MB_ILLEGAL_DATA_VAL;
 	}
 

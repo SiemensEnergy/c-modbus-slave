@@ -2,6 +2,10 @@
  * @file mbpdu.c
  * @brief Implementation of Modbus Protocol Data Unit (PDU) handling
  * @author Jonas Almås
+ *
+ * MISRA Deviations:
+ * - Rule 14.4: The controlling expression of an if statement and the controlling expression of an iteration-statement shall have essentially Boolean type
+ * - Rule 15.5: A function should have a single point of exit at the end
  */
 
 /*
@@ -114,7 +118,7 @@ extern size_t mbpdu_handle_req(
 	enum mbstatus_e status;
 	struct mbpdu_buf_s res_pdu;
 
-	if (!inst || !req || !res || req_len<1u) return 0u;
+	if (!inst || !req || !res || (req_len<1u)) return 0u;
 
 	send_event = MB_COMM_EVENT_IS_SEND;
 

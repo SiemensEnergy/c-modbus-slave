@@ -2,6 +2,14 @@
  * @file mbreg.c
  * @brief Implementation of Modbus register handling functions
  * @author Jonas Almås
+ *
+ * MISRA Deviations:
+ * - Rule 10.4: Both operands of an operator in which the usual arithmetic conversions are performed shall have the same essential type category
+ * - Rule 12.1: The precedence of operators within expressions should be made explicit
+ * - Rule 12.3: The comma operator should not be used
+ * - Rule 14.4: The controlling expression of an if statement and the controlling expression of an iteration-statement shall have essentially Boolean type
+ * - Rule 15.5: A function should have a single point of exit at the end
+ * - Rule 18.4: The +, -, += and -= operators should not be applied to an expression of pointer type
  */
 
 /*
@@ -291,7 +299,7 @@ static int read_block(const struct mbreg_desc_s *reg, uint16_t addr, uint8_t *re
 
 	reg_size_w = mbreg_size(reg) / 2u;
 	ix = (size_t)(addr - reg->address) / reg_size_w;
-	start_addr = (size_t)reg->address + ix * reg_size_w;
+	start_addr = reg->address + (uint16_t)(ix * reg_size_w);
 
 	if ((addr-start_addr) >= reg_size_w) {
 		return 0;
@@ -625,7 +633,7 @@ static enum mbstatus_e write_block_partial(
 	}
 
 	/* Apply the modification */
-	buf_offset = (addr - start_addr) * 2u;
+	buf_offset = (size_t)(addr - start_addr) * 2u;
 	n_copy = min(reg_size-buf_offset, n_remaining_regs*2u);
 	memcpy(buf+buf_offset, val, n_copy);
 

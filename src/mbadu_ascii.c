@@ -2,6 +2,16 @@
  * @file mbadu_ascii.c
  * @brief Implementation of Modbus Ascii Application Data Unit handling
  * @author Jonas Almås
+ *
+ * MISRA Deviations:
+ * - Rule 10.2: Expressions of essentially character type shall not be used inappropriately in addition and subtraction operations
+ * - Rule 10.4: Both operands of an operator in which the usual arithmetic conversions are performed shall have the same essential type category
+ * - Rule 10.8: The value of a composite expression shall not be cast to a different essential type category or a wider essential type
+ * - Rule 12.3: The comma operator should not be used
+ * - Rule 13.3: A full expression containing an increment (++) or decrement (--) operator should have no other potential side effects other than that caused by the increment or decrement
+ * - Rule 14.4: The controlling expression of an if statement and the controlling expression of an iteration-statement shall have essentially Boolean type
+ * - Rule 15.5: A function should have a single point of exit at the end
+ * - Rule 18.4: The +, -, += and -= operators should not be applied to an expression of pointer type
  */
 
  /*
@@ -114,13 +124,13 @@ extern size_t mbadu_ascii_handle_req(
 	if ((req[0] != MBADU_ASCII_START_CHAR)
 			|| (req[req_len-2u] != '\r')
 			|| (req[req_len-1u] != inst->state.ascii_delimiter)
-			|| ((req_len-1u)%2 != 0)) {
+			|| ((req_len-1u)%2u != 0u)) {
 		if (recv_event) mb_add_comm_event(inst, MB_COMM_EVENT_IS_RECV | recv_event);
 		return 0u;
 	}
 
 	/* Ensure entire request (excluding start and end chars) are hex */
-	for (i=1u; i<req_len-2u; ++i) {
+	for (i=1u; i<(req_len-2u); ++i) {
 		if (!isxdigit(req[i])) {
 			if (recv_event) mb_add_comm_event(inst, MB_COMM_EVENT_IS_RECV | recv_event);
 			return 0u;
@@ -129,7 +139,7 @@ extern size_t mbadu_ascii_handle_req(
 
 	/* Convert ascii request to binary */
 	req_bin_len = 0u;
-	for (i=1u; i<req_len-2u; i+=2u) { /* Excluding start char end crlf */
+	for (i=1u; i<(req_len-2u); i+=2u) { /* Excluding start char end crlf */
 		req_bin[req_bin_len++] = (uint8_t)(xtoi(req[i])*16 + xtoi(req[i+1u]));
 	}
 
