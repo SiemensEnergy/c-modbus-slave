@@ -32,7 +32,6 @@
 #define MBSUPP_H_INCLUDED
 
 #include <stdint.h>
-#include <stddef.h>
 
 /**
  * @brief Calculate Modbus RTU frame break time in microseconds
