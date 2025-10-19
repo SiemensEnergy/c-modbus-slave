@@ -176,7 +176,7 @@ struct mbcoil_desc_s {
 		 * @note Should be fast and non-blocking
 		 * @note Return value determines if the write operation succeeds
 		 */
-		enum mbstatus_e (*fn)(uint8_t value);
+		enum mbstatus_e (*fn)(int value);
 	} write;
 
 	/**

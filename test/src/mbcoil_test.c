@@ -127,7 +127,7 @@ TEST(mbcoil_write_locked_fails)
 	ASSERT_EQ(0, allowed);
 }
 
-static enum mbstatus_e failing_write_fn(uint8_t value)
+static enum mbstatus_e failing_write_fn(int value)
 {
 	(void)value;
 	return MB_ILLEGAL_DATA_VAL; /* Always fail */

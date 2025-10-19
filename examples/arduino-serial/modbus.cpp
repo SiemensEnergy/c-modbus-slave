@@ -9,12 +9,12 @@ extern "C" {
 
 static uint16_t s_some_val = 0x1234u;
 
-static uint8_t get_led_state(void)
+static int get_led_state(void)
 {
 	return digitalRead(LED_BUILTIN) ? 1u : 0u;
 }
 
-static enum mbstatus_e set_led_state(uint8_t state)
+static enum mbstatus_e set_led_state(int state)
 {
 	digitalWrite(LED_BUILTIN, state ? HIGH : LOW);
 	return MB_OK;
