@@ -389,7 +389,7 @@ extern size_t mbreg_read(
  * @note Calls wlock_cb if defined to check dynamic write locks
  * @note Calls wlock_override_cb if defined to allow override of lock conditions
  */
-extern int mbreg_write_allowed(
+extern size_t mbreg_write_allowed(
 	const struct mbreg_desc_s *reg,
 	uint16_t addr,
 	uint16_t start_addr,

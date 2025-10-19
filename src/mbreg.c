@@ -451,7 +451,7 @@ extern size_t mbreg_read(
 	}
 }
 
-extern int mbreg_write_allowed(
+extern size_t mbreg_write_allowed(
 	const struct mbreg_desc_s *reg,
 	uint16_t addr,
 	uint16_t start_addr,
