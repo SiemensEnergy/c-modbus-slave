@@ -4,8 +4,6 @@
  * @author Jonas Almås
  *
  * MISRA Deviations:
- * - Rule 12.3: The comma operator should not be used
- *   Rationale: Improves readability
  * - Rule 15.5: A function should have a single point of exit at the end
  *   Rationale: Multiple returns improve readability and reduce nesting for error conditions
  *   Mitigation: Each return path clearly documented with appropriate error handling

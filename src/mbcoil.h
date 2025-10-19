@@ -12,6 +12,7 @@
  *
  * MISRA Deviations:
  * - Rule 19.2: The union keyword should not be used
+ *   Rational: Necessary to describe the protocol
  */
 
 /*

@@ -4,8 +4,6 @@
  * @author Jonas Almås
  *
  * MISRA Deviations:
- * - Rule 12.3: The comma operator should not be used
- *   Rationale: Improves readability
  * - Rule 13.4: The result of an assignment operator should not be used
  *   Rationale: Improves readability and code maintainability
  *   Mitigation: Parentheses used to clarify intent

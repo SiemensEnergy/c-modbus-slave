@@ -4,8 +4,6 @@
  * @author Jonas Almås
  *
  * MISRA Deviations:
- * - Rule 12.3: The comma operator should not be used
- *   Rationale: Improves readability
  * - Rule 13.3: A full expression containing an increment (++) or decrement (--) operator should have no other potential side effects
  *   Rationale: Improves readability and code maintainability
  *   Mitigation: Side effects are intentional and well-documented, no unintended consequences
