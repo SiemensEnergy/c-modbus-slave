@@ -492,7 +492,7 @@ extern size_t mbreg_write_allowed(
 	if (n_remaining_regs < reg_size_w || (addr - reg->address) % reg_size_w) { /* Partial reg write */
 		offset = (addr - reg->address) * 2;
 		n_write_bytes = min(reg_size_w*2 - offset, n_remaining_regs*2);
-		return n_write_bytes / 2;
+		return n_write_bytes / 2u;
 	} else { /* Full register */
 		return reg_size_w;
 	}

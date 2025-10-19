@@ -301,8 +301,8 @@ struct mbreg_desc_s {
 };
 
 /** @brief Only for internal use */
-#define MBREG_READ_NO_ACCESS 0 /* No read access method present */
-#define MBREG_READ_LOCKED (SIZE_MAX-1) /* Register is locked */
+#define MBREG_READ_NO_ACCESS 0u /* No read access method present */
+#define MBREG_READ_LOCKED (SIZE_MAX-1u) /* Register is locked */
 #define MBREG_READ_DEV_FAIL SIZE_MAX /* Invalid coil descriptor configuration */
 
 /**
