@@ -9,8 +9,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
-- Read coil callback should now return an int instead of u8
-- Ensure mostly MISRA compatibility with a few exceptions
+- Coil read and write callbacks now operate on `int` instead of `uint8_t`
+- Ensure mostly MISRA compliance with a few exceptions
 
 ## [1.2.1] - 2026-09-17
 
