@@ -2,6 +2,14 @@
  * @file mbcoil.c
  * @brief Implementation of Modbus coil handling functions
  * @author Jonas Almås
+ *
+ * MISRA Deviations:
+ * - Rule 15.5: A function should have a single point of exit at the end
+ *   Rationale: Multiple returns improve readability and reduce nesting for error conditions
+ *   Mitigation: Each return path clearly documented with appropriate error handling
+ * - Rule 18.4: The +, -, += and -= operators should not be applied to an expression of pointer type
+ *   Rationale: Pointer arithmetic necessary for efficient buffer parsing and generation
+ *   Mitigation: Bounds checking performed, arithmetic limited to validated buffer operations
  */
 
 /*
@@ -31,7 +39,7 @@
 #include "mbcoil.h"
 #include <stddef.h>
 
-enum {BSEARCH_THRESHOLD=16};
+enum {BSEARCH_THRESHOLD=16u};
 
 extern const struct mbcoil_desc_s *mbcoil_find_desc(
 	const struct mbcoil_desc_s *coils,
@@ -42,27 +50,27 @@ extern const struct mbcoil_desc_s *mbcoil_find_desc(
 	size_t l, m, r;
 	size_t i;
 
-	if (!coils || n_coils==0) return NULL;
+	if (!coils || (n_coils==0u)) return NULL;
 
 	if (n_coils > BSEARCH_THRESHOLD) { /* Only use binary search for larger descriptor sets */
-		l = 0;
-		r = n_coils - 1;
+		l = 0u;
+		r = n_coils - 1u;
 
 		while (l <= r) {
-			m = l + (r - l) / 2;
+			m = l + (r - l) / 2u;
 			coil = coils + m;
 
 			if (coil->address < addr) {
-				l = m + 1;
+				l = m + 1u;
 			} else if (coil->address > addr) {
-				if (m == 0) break; /* Prevent underflow */
-				r = m - 1;
+				if (m == 0u) break; /* Prevent underflow */
+				r = m - 1u;
 			} else {
 				return coil;
 			}
 		}
 	} else {
-		for (i=0; i<n_coils; ++i) {
+		for (i=0u; i<n_coils; ++i) {
 			coil = coils + i;
 			if (coil->address == addr) {
 				return coil;
@@ -86,8 +94,8 @@ extern int mbcoil_read(const struct mbcoil_desc_s *coil)
 	case MCACC_R_VAL:
 		return !!coil->read.val;
 	case MCACC_R_PTR:
-		return (coil->read.ptr && coil->read.ix<8)
-			? !!((*coil->read.ptr) & (1<<coil->read.ix))
+		return (coil->read.ptr && (coil->read.ix<8u))
+			? (!!(*coil->read.ptr & (1u<<coil->read.ix)))
 			: MBCOIL_READ_DEV_FAIL;
 	case MCACC_R_FN:
 		return coil->read.fn
@@ -116,11 +124,11 @@ extern enum mbstatus_e mbcoil_write(const struct mbcoil_desc_s *coil, uint8_t va
 
 	switch (coil->access & MCACC_W_MASK) {
 	case MCACC_W_PTR:
-		if (!coil->write.ptr || coil->write.ix>7) return MB_DEV_FAIL;
-		if (value) {
-			*coil->write.ptr |= 1<<coil->write.ix;
+		if (!coil->write.ptr || (coil->write.ix>7u)) return MB_DEV_FAIL;
+		if (value!=0u) {
+			*coil->write.ptr |= (uint8_t)(1u<<coil->write.ix);
 		} else {
-			*coil->write.ptr &= ~(1<<coil->write.ix);
+			*coil->write.ptr &= (uint8_t)(~(1u<<coil->write.ix));
 		}
 		return MB_OK;
 	case MCACC_W_FN:

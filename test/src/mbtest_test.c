@@ -231,12 +231,12 @@ TEST(mbtest_coils_valid_value_access)
 }
 
 /* Test helper functions for coil tests */
-static uint8_t test_coil_read_fn(void)
+static int test_coil_read_fn(void)
 {
 	return 1;
 }
 
-static enum mbstatus_e test_coil_write_fn(uint8_t value)
+static enum mbstatus_e test_coil_write_fn(int value)
 {
 	(void)value; /* Suppress unused parameter warning */
 	return MB_OK;

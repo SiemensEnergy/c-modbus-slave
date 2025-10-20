@@ -1,6 +1,6 @@
 # C Modbus Slave
 
-Lightweight [Modbus](https://en.wikipedia.org/wiki/Modbus) slave implementation for embedded C applications.
+Lightweight [Modbus](https://en.wikipedia.org/wiki/Modbus) slave implementation for embedded C applications
 
 ## Features
 
@@ -12,11 +12,16 @@ Lightweight [Modbus](https://en.wikipedia.org/wiki/Modbus) slave implementation 
 - **Standards compliant** - Implements Modbus specification accurately
 - **Thread-safe** - No global state, multiple instances supported
 
-## Prerequisites
+## Getting Started
+
+### Prerequisites
 
 - C11 compatible compiler
+- Basic knowledge of Modbus protocol ([Wikipedia](https://en.wikipedia.org/wiki/Modbus))
 
-## Quick Start
+### Quick Example
+
+Here's a minimal example to get you started:
 
 ```c
 #include "mbinst.h"
@@ -55,6 +60,8 @@ if (resp_len) {
 }
 ```
 
+> **Tip:** Check the `examples/` directory for complete working examples with different transport layers (Serial, Ethernet).
+
 ## Documentation
 
 - **[Building & Setup](docs/building.md)** - Build instructions and file dependencies
@@ -62,6 +69,15 @@ if (resp_len) {
 - **[Examples](docs/examples.md)** - Usage examples for different scenarios
 - **[Testing](docs/testing.md)** - Unit testing and validation tools
 - **[Glossary](docs/glossary.md)** - Abbreviations and technical terms
+
+## Code Quality
+
+This project follows **MISRA C:2023** coding standards with a few documented exceptions where necessary for functionality or compatibility. The codebase emphasizes:
+
+- Static analysis compliance for safety-critical applications
+- Predictable behavior and reduced complexity
+- Enhanced portability across embedded platforms
+- Clear documentation of any deviations from the standard
 
 ## Contributing
 

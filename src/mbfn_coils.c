@@ -2,6 +2,17 @@
  * @file mbfn_coils.c
  * @brief Implementation of Modbus coil function handlers
  * @author Jonas Almås
+ *
+ * MISRA Deviations:
+ * - Rule 13.4: The result of an assignment operator should not be used
+ *   Rationale: Assignment in if condition improves code readability for find operations
+ *   Mitigation: Parentheses used to clarify intent, NULL check explicit
+ * - Rule 15.5: A function should have a single point of exit at the end
+ *   Rationale: Multiple returns improve readability and reduce nesting for error conditions
+ *   Mitigation: Each return path clearly documented with appropriate error codes
+ * - Rule 18.4: The +, -, += and -= operators should not be applied to an expression of pointer type
+ *   Rationale: Pointer arithmetic necessary for efficient buffer operations
+ *   Mitigation: Bounds checking performed, arithmetic limited to safe operations
  */
 
 /*
@@ -52,11 +63,11 @@ extern enum mbstatus_e mbfn_read_coils(
 	size_t i;
 	const struct mbcoil_desc_s *coil;
 
-	if (!inst || !coils || !req || !res) {
+	if ((inst==NULL) || (coils==NULL) || (req==NULL) || (res==NULL)) {
 		return MB_DEV_FAIL;
 	}
 
-	if (req[0]!=MBFC_READ_COILS && req[0]!=MBFC_READ_DISC_INPUTS) {
+	if ((req[0]!=MBFC_READ_COILS) && (req[0]!=MBFC_READ_DISC_INPUTS)) {
 		return MB_DEV_FAIL;
 	}
 
@@ -64,10 +75,10 @@ extern enum mbstatus_e mbfn_read_coils(
 		return MB_ILLEGAL_DATA_VAL;
 	}
 
-	start_addr = betou16(req+1);
-	quantity = betou16(req+3);
+	start_addr = betou16(req+1u);
+	quantity = betou16(req+3u);
 
-	if (quantity == 0 || quantity > MBCOIL_N_READ_MAX) { /* Validate quantity */
+	if ((quantity==0u) || (quantity>MBCOIL_N_READ_MAX)) { /* Validate quantity */
 		return MB_ILLEGAL_DATA_VAL;
 	}
 
@@ -79,20 +90,20 @@ extern enum mbstatus_e mbfn_read_coils(
 		return MB_ILLEGAL_DATA_ADDR;
 	}
 
-	byte_count = (quantity + 7u) / 8u;
+	byte_count = (uint8_t)((quantity + 7u) / 8u);
 	res->p[1] = byte_count;
-	res->size = 2u + byte_count;
+	res->size = 2u + (size_t)byte_count;
 
-	memset(res->p+2, 0, byte_count); /* Clear all response bytes */
+	(void)memset(res->p+2u, 0, byte_count); /* Clear all response bytes */
 
 	/* Read coils */
-	for (i=0; i<quantity; ++i) {
-		addr = start_addr + i;
-		if ((coil = mbcoil_find_desc(coils, n_coils, addr))) {
+	for (i=0u; i<quantity; ++i) {
+		addr = start_addr + (uint16_t)i;
+		if ((coil = mbcoil_find_desc(coils, n_coils, addr)) != NULL) {
 			switch (mbcoil_read(coil)) {
 			case MBCOIL_READ_OFF: break;
 			case MBCOIL_READ_ON:
-				res->p[2 + i/8] |= (1<<(i%8));
+				res->p[2u + (i/8u)] |= (uint8_t)(1u << (i % 8u));
 				break;
 			case MBCOIL_READ_LOCKED: return MB_ILLEGAL_DATA_ADDR;
 			case MBCOIL_READ_NO_ACCESS: break; /* Leave coils without read access as 0 */
@@ -118,7 +129,7 @@ extern enum mbstatus_e mbfn_write_coil(
 	enum mbstatus_e status;
 	const struct mbcoil_desc_s *coil;
 
-	if (!inst || !coils || !req || !res) {
+	if ((inst==NULL) || (coils==NULL) || (req==NULL) || (res==NULL)) {
 		return MB_DEV_FAIL;
 	}
 
@@ -130,16 +141,16 @@ extern enum mbstatus_e mbfn_write_coil(
 		return MB_ILLEGAL_DATA_VAL;
 	}
 
-	coil_addr = betou16(req+1);
-	coil_value = betou16(req+3);
+	coil_addr = betou16(req+1u);
+	coil_value = betou16(req+3u);
 
 	/* Validate coil value (must be 0x0000 or 0xFF00) */
-	if (coil_value != MBCOIL_OFF && coil_value != MBCOIL_ON) {
+	if ((coil_value != MBCOIL_OFF) && (coil_value != MBCOIL_ON)) {
 		return MB_ILLEGAL_DATA_VAL;
 	}
 
 	coil = mbcoil_find_desc(coils, n_coils, coil_addr);
-	if (!coil) {
+	if (coil==NULL) {
 		return MB_ILLEGAL_DATA_ADDR;
 	}
 
@@ -152,10 +163,10 @@ extern enum mbstatus_e mbfn_write_coil(
 		return status;
 	}
 
-	if (coil->post_write_cb) {
+	if (coil->post_write_cb!=NULL) {
 		coil->post_write_cb();
 	}
-	if (inst->commit_coils_write_cb) {
+	if (inst->commit_coils_write_cb!=NULL) {
 		inst->commit_coils_write_cb(inst);
 	}
 
@@ -183,7 +194,7 @@ extern enum mbstatus_e mbfn_write_coils(
 	enum mbstatus_e status;
 	const struct mbcoil_desc_s *coil;
 
-	if (!inst || !coils || !req || !res) {
+	if ((inst==NULL) || (coils==NULL) || (req==NULL) || (res==NULL)) {
 		return MB_DEV_FAIL;
 	}
 
@@ -197,11 +208,11 @@ extern enum mbstatus_e mbfn_write_coils(
 		return MB_ILLEGAL_DATA_VAL;
 	}
 
-	start_addr = betou16(req+1);
-	quantity = betou16(req+3);
+	start_addr = betou16(req+1u);
+	quantity = betou16(req+3u);
 	byte_count = req[5];
 
-	if (quantity == 0u || quantity > MBCOIL_N_WRITE_MAX) { /* Validate quantity */
+	if ((quantity==0u) || (quantity>MBCOIL_N_WRITE_MAX)) { /* Validate quantity */
 		return MB_ILLEGAL_DATA_VAL;
 	}
 
@@ -214,9 +225,9 @@ extern enum mbstatus_e mbfn_write_coils(
 	}
 
 	/* Ensure all coils exists and can be written to before writing anything */
-	for (i=0; i<quantity; ++i) {
-		addr = start_addr + i;
-		if (!(coil = mbcoil_find_desc(coils, n_coils, addr))) {
+	for (i=0u; i<quantity; ++i) {
+		addr = start_addr + (uint16_t)i;
+		if ((coil = mbcoil_find_desc(coils, n_coils, addr)) == NULL) {
 			return MB_ILLEGAL_DATA_ADDR;
 		}
 
@@ -226,28 +237,28 @@ extern enum mbstatus_e mbfn_write_coils(
 	}
 
 	/* Write coils */
-	for (i=0; i<quantity; ++i) {
-		addr = start_addr + i;
+	for (i=0u; i<quantity; ++i) {
+		addr = start_addr + (uint16_t)i;
 		coil = mbcoil_find_desc(coils, n_coils, addr);
 
-		status = mbcoil_write(coil, !!(req[6 + i/8] & (1<<(i%8))));
+		status = mbcoil_write(coil, !!(req[6u + (i/8u)] & (uint8_t)(1u << (i%8u))));
 		if (status!=MB_OK) {
 			return status;
 		}
 
-		if (coil->post_write_cb) {
+		if (coil->post_write_cb!=NULL) {
 			coil->post_write_cb();
 		}
 	}
 
 	/* Call commit callback if it exists */
-	if (inst->commit_coils_write_cb) {
+	if (inst->commit_coils_write_cb!=NULL) {
 		inst->commit_coils_write_cb(inst);
 	}
 
 	/* Prepare response */
-	u16tobe(start_addr, res->p+1);
-	u16tobe(quantity, res->p+3);
+	u16tobe(start_addr, res->p+1u);
+	u16tobe(quantity, res->p+3u);
 	res->size = 5u;
 
 	return MB_OK;

@@ -9,6 +9,10 @@
  * constant values, and block/array operations with optional runtime locking.
  *
  * @see mbinst.h for register map integration
+ *
+ * MISRA Deviations:
+ * - Rule 19.2: The union keyword should not be used
+ *   Rational: Necessary to describe the protocol
  */
 
 /*
@@ -43,18 +47,18 @@
 #include <stdint.h>
 
 enum {
-	MRTYPE_UNSIGNED = 1<<0,
-	MRTYPE_SIGNED = 1<<1,
-	MRTYPE_FLOAT = 1<<2,
+	MRTYPE_UNSIGNED = 1u<<0,
+	MRTYPE_SIGNED = 1u<<1,
+	MRTYPE_FLOAT = 1u<<2,
 
-	MRTYPE_SIZE_8 = 1<<3/*8*/,
-	MRTYPE_SIZE_16 = 1<<4/*16*/,
-	MRTYPE_SIZE_32 = 1<<5/*32*/,
-	MRTYPE_SIZE_64 = 1<<6/*64*/,
+	MRTYPE_SIZE_8 = 1u<<3/*8*/,
+	MRTYPE_SIZE_16 = 1u<<4/*16*/,
+	MRTYPE_SIZE_32 = 1u<<5/*32*/,
+	MRTYPE_SIZE_64 = 1u<<6/*64*/,
 	MRTYPE_SIZE_MAX = MRTYPE_SIZE_64,
 
-	MRTYPE_MASK = (1<<7)-1,
-	MRTYPE_SIZE_MASK = MRTYPE_MASK & ~7,
+	MRTYPE_MASK = (1u<<7)-1u,
+	MRTYPE_SIZE_MASK = MRTYPE_MASK & ~7u,
 };
 
 /**
@@ -71,7 +75,7 @@ enum mbreg_type_e {
 	 * @note 7-bit values are handled as one per 16-bit register
 	 * @note Use n_block_entries to specify array size
 	 */
-	MRTYPE_BLOCK = 512,
+	MRTYPE_BLOCK = 512u,
 
 	MRTYPE_U8 = MRTYPE_SIZE_8 | MRTYPE_UNSIGNED, /**< padded to 16-bit for protocol */
 	MRTYPE_U16 = MRTYPE_SIZE_16 | MRTYPE_UNSIGNED,
@@ -93,14 +97,14 @@ enum mbreg_type_e {
  * Defines how a register can be accessed (read/write methods)
  */
 enum mbreg_access_e {
-	MRACC_R_VAL = 1<<0, /**< Read from constant value stored in descriptor */
+	MRACC_R_VAL = 1u<<0, /**< Read from constant value stored in descriptor */
 
-	MRACC_R_PTR = 1<<1, /**< Read from pointer */
-	MRACC_W_PTR = 1<<2, /**< Write to pointer */
+	MRACC_R_PTR = 1u<<1, /**< Read from pointer */
+	MRACC_W_PTR = 1u<<2, /**< Write to pointer */
 	MRACC_RW_PTR = MRACC_R_PTR | MRACC_W_PTR, /**< Read/write via pointer */
 
-	MRACC_R_FN = 1<<3, /**< Read via function callback */
-	MRACC_W_FN = 1<<4, /**< Write via function callback */
+	MRACC_R_FN = 1u<<3, /**< Read via function callback */
+	MRACC_W_FN = 1u<<4, /**< Write via function callback */
 	MRACC_RW_FN = MRACC_R_FN | MRACC_W_FN, /**< Read/write via function callbacks */
 
 	MRACC_R_MASK = MRACC_R_VAL | MRACC_R_PTR | MRACC_R_FN, /**< Mask for read access methods */
@@ -301,8 +305,8 @@ struct mbreg_desc_s {
 };
 
 /** @brief Only for internal use */
-#define MBREG_READ_NO_ACCESS 0 /* No read access method present */
-#define MBREG_READ_LOCKED (SIZE_MAX-1) /* Register is locked */
+#define MBREG_READ_NO_ACCESS 0u /* No read access method present */
+#define MBREG_READ_LOCKED (SIZE_MAX-1u) /* Register is locked */
 #define MBREG_READ_DEV_FAIL SIZE_MAX /* Invalid coil descriptor configuration */
 
 /**
@@ -389,7 +393,7 @@ extern size_t mbreg_read(
  * @note Calls wlock_cb if defined to check dynamic write locks
  * @note Calls wlock_override_cb if defined to allow override of lock conditions
  */
-extern int mbreg_write_allowed(
+extern size_t mbreg_write_allowed(
 	const struct mbreg_desc_s *reg,
 	uint16_t addr,
 	uint16_t start_addr,

@@ -2,6 +2,14 @@
  * @file mbadu_tcp.c
  * @brief Implementation of Modbus TCP/IP Application Data Unit handling
  * @author Jonas Almås
+ *
+ * MISRA Deviations:
+ * - Rule 15.5: A function should have a single point of exit at the end
+ *   Rationale: Multiple returns improve readability and reduce nesting for error conditions
+ *   Mitigation: Each return path clearly documented with appropriate error handling
+ * - Rule 18.4: The +, -, += and -= operators should not be applied to an expression of pointer type
+ *   Rationale: Pointer arithmetic necessary for efficient buffer parsing and generation
+ *   Mitigation: Bounds checking performed, arithmetic limited to validated buffer operations
  */
 
 /*
@@ -44,10 +52,10 @@ extern size_t mbadu_tcp_handle_req(
 	uint16_t transaction_id, protocol_id, length;
 	uint8_t unit_id;
 
-	if (!inst || !req || !res) return 0u;
+	if ((inst==NULL) || (req==NULL) || (res==NULL)) return 0u;
 
 	/* We must at least have a complate header + function code */
-	if (req_len < (MBAP_SIZE + 1)) {
+	if (req_len < (MBAP_SIZE+1u)) {
 		return 0u;
 	}
 
@@ -63,7 +71,7 @@ extern size_t mbadu_tcp_handle_req(
 	pdu_size = mbpdu_handle_req(
 		inst,
 		req + MBAP_SIZE,
-		(size_t)(length - 1),
+		length-1u,
 		res + MBAP_SIZE);
 
 	if (pdu_size==0u) {
@@ -73,7 +81,7 @@ extern size_t mbadu_tcp_handle_req(
 	/* Build response MBAP */
 	u16tobe(transaction_id, res + MBAP_POS_TRANS_ID);
 	u16tobe(protocol_id, res + MBAP_POS_PROT_ID);
-	u16tobe(1+pdu_size, res + MBAP_POS_LEN);
+	u16tobe(1u+pdu_size, res + MBAP_POS_LEN);
 	res[MBAP_POS_UNIT_ID] = unit_id;
 
 	return MBAP_SIZE + pdu_size;

@@ -9,6 +9,10 @@
  * constant values with optional runtime locking.
  *
  * @see mbinst.h for coil map integration
+ *
+ * MISRA Deviations:
+ * - Rule 19.2: The union keyword should not be used
+ *   Rational: Necessary to describe the protocol
  */
 
 /*
@@ -49,14 +53,14 @@
  * Multiple access methods can be combined using bitwise OR.
  */
 enum mbcoil_access_e {
-	MCACC_R_VAL = 1<<0, /**< Read from constant value stored in descriptor */
+	MCACC_R_VAL = 1u<<0, /**< Read from constant value stored in descriptor */
 
-	MCACC_R_PTR = 1<<1, /**< Read from memory pointer using bit index */
-	MCACC_W_PTR = 1<<2, /**< Write to memory pointer using bit index */
+	MCACC_R_PTR = 1u<<1, /**< Read from memory pointer using bit index */
+	MCACC_W_PTR = 1u<<2, /**< Write to memory pointer using bit index */
 	MCACC_RW_PTR = MCACC_R_PTR | MCACC_W_PTR, /**< Read/write via memory pointer */
 
-	MCACC_R_FN = 1<<3, /**< Read via function callback */
-	MCACC_W_FN = 1<<4, /**< Write via function callback */
+	MCACC_R_FN = 1u<<3, /**< Read via function callback */
+	MCACC_W_FN = 1u<<4, /**< Write via function callback */
 	MCACC_RW_FN = MCACC_R_FN | MCACC_W_FN, /**< Read/write via function callbacks */
 
 	MCACC_R_MASK = MCACC_R_VAL | MCACC_R_PTR | MCACC_R_FN, /**< Mask for read access methods */
@@ -139,7 +143,7 @@ struct mbcoil_desc_s {
 		 * @note Return value is automatically normalized to 0 or 1
 		 * @note Should be fast and non-blocking
 		 */
-		uint8_t (*fn)(void);
+		int (*fn)(void);
 	} read;
 
 	/**
@@ -176,7 +180,7 @@ struct mbcoil_desc_s {
 		 * @note Should be fast and non-blocking
 		 * @note Return value determines if the write operation succeeds
 		 */
-		enum mbstatus_e (*fn)(uint8_t value);
+		enum mbstatus_e (*fn)(int value);
 	} write;
 
 	/**

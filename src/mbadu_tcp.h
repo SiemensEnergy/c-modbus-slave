@@ -49,15 +49,15 @@
  * - Unit id (1 byte) (Same as Modbus serial slave addres)
  */
 enum {
-	MBAP_POS_TRANS_ID = 0,
-	MBAP_POS_PROT_ID = 2,
-	MBAP_POS_LEN = 4,
-	MBAP_POS_UNIT_ID = 6,
+	MBAP_POS_TRANS_ID = 0u,
+	MBAP_POS_PROT_ID = 2u,
+	MBAP_POS_LEN = 4u,
+	MBAP_POS_UNIT_ID = 6u,
 
-	MBAP_SIZE = 7,
+	MBAP_SIZE = 7u,
 };
 
-enum {MBADU_TCP_PROT_ID=0};
+enum {MBADU_TCP_PROT_ID=0u};
 
 enum {
 	/*
@@ -69,7 +69,7 @@ enum {
 	MBADU_TCP_SIZE_MAX = MBAP_SIZE + MBPDU_SIZE_MAX,
 };
 
-enum {MBTCP_PORT=502};
+enum {MBTCP_PORT=502u};
 
 /**
  * @brief Handle Modbus TCP/IP ADU request
