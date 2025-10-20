@@ -27,7 +27,3 @@ Files marked **X** must always be compiled, regardless of transport protocol.
 ## Compiler Requirements
 
 - **C11 compatible compiler**
-- Standard library support for:
-  - `stdint.h`
-  - `stddef.h`
-  - `string.h`

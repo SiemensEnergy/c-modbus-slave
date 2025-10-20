@@ -148,18 +148,18 @@ static const struct mbreg_desc_s s_block_regs[] = {
 static int s_pump_running = 0;
 static int s_safety_enabled = 1;
 
-static uint8_t get_pump_status(void)
+static int get_pump_status(void)
 {
-    return (uint8_t)!!s_pump_running;
+    return !!s_pump_running;
 }
 
-static enum mbstatus_e set_pump_status(uint8_t value)
+static enum mbstatus_e set_pump_status(int value)
 {
     if (!s_safety_enabled && value) {
         /* Safety interlock - can't enable pump */
         return MB_ILLEGAL_DATA_VAL; /* Reject write (Prefer using a lock!) */
     }
-    s_pump_running = !!value;
+    s_pump_running = value;
     return MB_OK; /* Success */
 }
 
