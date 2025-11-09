@@ -17,7 +17,7 @@ Lightweight [Modbus](https://en.wikipedia.org/wiki/Modbus) slave implementation 
 ### Prerequisites
 
 - C11 compatible compiler
-- Basic knowledge of Modbus protocol ([Wikipedia](https://en.wikipedia.org/wiki/Modbus))
+- Basic knowledge of Modbus protocol ([Wikipedia](https://en.wikipedia.org/wiki/Modbus), [Specs](https://www.modbus.org/modbus-specifications))
 
 ### Quick Example
 

@@ -47,7 +47,7 @@ Additional function codes can be handled via the `mbinst_s::handle_fn_cb` callba
 
 Enum `enum mbfc_e` can be found in `mbdef.h`.
 
-For additional information, see [~~Modbus Application Protocol~~](https://www.modbus.org/docs/Modbus_Application_Protocol_V1_1b3.pdf) [Modbus](https://www.modbus.org/).
+For additional information, see [Modbus Application Protocol](https://www.modbus.org/file/secure/modbusprotocolspecification.pdf).
 
 |       | Value | Enum                           | Description                      | Note          |
 | ----- | ----- | ------------------------------ | -------------------------------- | ------------- |
