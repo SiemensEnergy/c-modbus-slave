@@ -491,12 +491,6 @@ extern size_t mbreg_write_allowed(
 	reg_size_w = mbreg_size(reg) / 2u;
 	if (reg_size_w == 0u) return 0u;
 
-	/* Make sure we have enough data for this register if writing using a function */
-	if ((reg->access & MRACC_W_MASK) == MRACC_W_FN
-			&& n_remaining_regs < reg_size_w) {
-		return 0u;
-	}
-
 	/* Return n registers that will be written to */
 	if ((n_remaining_regs < reg_size_w) || ((addr - reg->address) % reg_size_w)) { /* Partial reg write */
 		offset = (addr - reg->address) * 2u;
@@ -665,6 +659,41 @@ static enum mbstatus_e write_fn(
 	}
 }
 
+static enum mbstatus_e write_partial_fn(
+	const struct mbreg_desc_s *reg,
+	uint16_t addr,
+	size_t n_remaining_regs,
+	const uint8_t *val,
+	size_t *n_written)
+{
+	uint8_t buf[MRTYPE_SIZE_MAX/8];
+	size_t reg_size, buf_offset, n_copy;
+
+	reg_size = mbreg_size(reg);
+
+	if (((addr - reg->address)*2u) >= reg_size) {
+		return MB_DEV_FAIL;
+	}
+
+	/* Read the current value into a buffer */
+	switch (mbreg_read(reg, reg->address, sizeof buf/2u, buf, 0)) {
+	case MBREG_READ_NO_ACCESS:
+	case MBREG_READ_LOCKED: return MB_ILLEGAL_DATA_ADDR;
+	case MBREG_READ_DEV_FAIL: return MB_DEV_FAIL;
+	default: break;
+	}
+
+	/* Apply partial write */
+	buf_offset = (size_t)(addr - reg->address) * 2u;
+	n_copy = min(reg_size-buf_offset, n_remaining_regs*2u);
+	(void)memcpy(buf+buf_offset, val, n_copy);
+
+	if (n_written) *n_written = n_copy / 2u;
+
+	/* Write the modified value */
+	return write_fn(reg, buf);
+}
+
 extern enum mbstatus_e mbreg_write(
 	const struct mbreg_desc_s *reg,
 	uint16_t addr,
@@ -688,7 +717,7 @@ extern enum mbstatus_e mbreg_write(
 		} else if ((reg->access & MRACC_W_MASK) == MRACC_W_PTR) {
 			return write_ptr_partial(reg, addr, n_remaining_regs, val, n_written);
 		} else {
-			return MB_DEV_FAIL; /* Writing partial to a function doesn't make any sense */
+			return write_partial_fn(reg, addr, n_remaining_regs, val, n_written);
 		}
 	} else { /* Full reg write */
 		if (n_written) *n_written = reg_size_w;

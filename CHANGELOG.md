@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - Function 0x16 (Mask write register)
+- Add support for writing to partial registers with function write access
 
 ## [1.3.0] - 2025-10-20
 

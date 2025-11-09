@@ -2338,7 +2338,7 @@ static enum mbstatus_e test_write_callback_u32(uint32_t value)
 	s_test_write_callback_u32 = value;
 	return MB_OK;
 }
-TEST(mbpdu_write_partial_reg_fc_cb_fails)
+TEST(mbpdu_write_partial_reg_fc_cb_fails_missing_read)
 {
 	const struct mbreg_desc_s regs[] = {
 		{
@@ -2354,9 +2354,11 @@ TEST(mbpdu_write_partial_reg_fc_cb_fails)
 	};
 	mbinst_init(&inst);
 
+	s_test_write_callback_u32 = 0u;
+
 	uint8_t res[MBPDU_SIZE_MAX];
 
-	/* Fails lower part */
+	/* Fails upper part */
 	uint8_t pdu1_data[] = {
 		MBFC_WRITE_MULTIPLE_REGS,
 		0x00, 0x10, /* Start addr */
@@ -2370,7 +2372,7 @@ TEST(mbpdu_write_partial_reg_fc_cb_fails)
 	ASSERT_EQ(MB_ILLEGAL_DATA_ADDR, res[1]);
 	ASSERT_EQ(0, s_test_write_callback_u32);
 
-	/* Fails upper part */
+	/* Fails lower part */
 	uint8_t pdu2_data[] = {
 		MBFC_WRITE_MULTIPLE_REGS,
 		0x00, 0x11, /* Start addr */
@@ -2400,6 +2402,54 @@ TEST(mbpdu_write_partial_reg_fc_cb_fails)
 	ASSERT_EQ(0x10, res[2]) /* Start addr L */
 	ASSERT_EQ(0x00, res[3]) /* n regs to write H */
 	ASSERT_EQ(0x02, res[4]) /* n regs to write L */
+	ASSERT_EQ(0x12345678u, s_test_write_callback_u32);
+}
+
+TEST(mbpdu_write_partial_reg_fc_cb_works)
+{
+	const struct mbreg_desc_s regs[] = {
+		{
+			.address=0x10u,
+			.type=MRTYPE_U32,
+			.access=MRACC_R_PTR | MRACC_W_FN,
+			.read={.pu32=&s_test_write_callback_u32},
+			.write={.fu32=test_write_callback_u32},
+		}
+	};
+	struct mbinst_s inst = {
+		.hold_regs=regs,
+		.n_hold_regs=sizeof regs / sizeof regs[0]
+	};
+	mbinst_init(&inst);
+
+	s_test_write_callback_u32 = 0u;
+
+	uint8_t res[MBPDU_SIZE_MAX];
+
+	/* Works upper part */
+	uint8_t pdu1_data[] = {
+		MBFC_WRITE_MULTIPLE_REGS,
+		0x00, 0x10, /* Start addr */
+		0x00, 0x01, /* n regs to write */
+		0x02, /* Data byte count */
+		0x12, 0x34}; /* Data reg 0x10 */
+	size_t res_size = mbpdu_handle_req(&inst, pdu1_data, sizeof pdu1_data, res);
+
+	ASSERT_EQ(5u, res_size);
+	ASSERT(!(res[0] & MB_ERR_FLG));
+	ASSERT_EQ(0x12340000u, s_test_write_callback_u32);
+
+	/* Works lower part */
+	uint8_t pdu2_data[] = {
+		MBFC_WRITE_MULTIPLE_REGS,
+		0x00, 0x11, /* Start addr */
+		0x00, 0x01, /* n regs to write */
+		0x02, /* Data byte count */
+		0x56, 0x78}; /* Data reg 0x11 */
+	res_size = mbpdu_handle_req(&inst, pdu2_data, sizeof pdu2_data, res);
+
+	ASSERT_EQ(5u, res_size);
+	ASSERT(!(res[0] & MB_ERR_FLG));
 	ASSERT_EQ(0x12345678u, s_test_write_callback_u32);
 }
 
@@ -3083,7 +3133,8 @@ TEST_MAIN(
 	mbpdu_read_write_regs_commit_callback_executed,
 	mbpdu_read_write_regs_zero_read_quantity_fails,
 	mbpdu_read_write_regs_zero_write_quantity_fails,
-	mbpdu_write_partial_reg_fc_cb_fails,
+	mbpdu_write_partial_reg_fc_cb_fails_missing_read,
+	mbpdu_write_partial_reg_fc_cb_works,
 	mbpdu_mask_write_res_works,
 	mbpdu_mask_write_invalid_request_length_fails,
 	mbpdu_mask_write_nonexistent_addr_fails,
