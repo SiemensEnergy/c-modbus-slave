@@ -491,8 +491,9 @@ extern size_t mbreg_write_allowed(
 	reg_size_w = mbreg_size(reg) / 2u;
 	if (reg_size_w == 0u) return 0u;
 
-	/* Make sure we have enough data for this register */
-	if (n_remaining_regs < reg_size_w) {
+	/* Make sure we have enough data for this register if writing using a function */
+	if ((reg->access & MRACC_W_MASK) == MRACC_W_FN
+			&& n_remaining_regs < reg_size_w) {
 		return 0u;
 	}
 
@@ -713,7 +714,7 @@ extern enum mbstatus_e mbreg_mask_write(
 	uint8_t buf[2];
 	uint16_t val;
 
-	switch (mbreg_read(reg, addr, sizeof buf, buf, 0)) {
+	switch (mbreg_read(reg, addr, 1u, buf, 0)) {
 	case MBREG_READ_NO_ACCESS:
 	case MBREG_READ_LOCKED: return MB_ILLEGAL_DATA_ADDR;
 	case MBREG_READ_DEV_FAIL: return MB_DEV_FAIL;
@@ -725,5 +726,5 @@ extern enum mbstatus_e mbreg_mask_write(
 	val = (val & and_mask) | (or_mask & (~and_mask));
 	u16tobe(val, buf);
 
-	return mbreg_write(reg, addr, sizeof buf, buf, NULL);
+	return mbreg_write(reg, addr, 1u, buf, NULL);
 }
