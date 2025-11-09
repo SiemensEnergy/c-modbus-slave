@@ -2338,7 +2338,7 @@ static enum mbstatus_e test_write_callback_u32(uint32_t value)
 	s_test_write_callback_u32 = value;
 	return MB_OK;
 }
-TEST(mbpdu_write_partial_reg_fc_cb_fails)
+TEST(mbpdu_write_partial_reg_fc_cb_fails_missing_read)
 {
 	const struct mbreg_desc_s regs[] = {
 		{
@@ -2354,9 +2354,11 @@ TEST(mbpdu_write_partial_reg_fc_cb_fails)
 	};
 	mbinst_init(&inst);
 
+	s_test_write_callback_u32 = 0u;
+
 	uint8_t res[MBPDU_SIZE_MAX];
 
-	/* Fails lower part */
+	/* Fails upper part */
 	uint8_t pdu1_data[] = {
 		MBFC_WRITE_MULTIPLE_REGS,
 		0x00, 0x10, /* Start addr */
@@ -2370,7 +2372,7 @@ TEST(mbpdu_write_partial_reg_fc_cb_fails)
 	ASSERT_EQ(MB_ILLEGAL_DATA_ADDR, res[1]);
 	ASSERT_EQ(0, s_test_write_callback_u32);
 
-	/* Fails upper part */
+	/* Fails lower part */
 	uint8_t pdu2_data[] = {
 		MBFC_WRITE_MULTIPLE_REGS,
 		0x00, 0x11, /* Start addr */
@@ -2401,6 +2403,673 @@ TEST(mbpdu_write_partial_reg_fc_cb_fails)
 	ASSERT_EQ(0x00, res[3]) /* n regs to write H */
 	ASSERT_EQ(0x02, res[4]) /* n regs to write L */
 	ASSERT_EQ(0x12345678u, s_test_write_callback_u32);
+}
+
+TEST(mbpdu_write_partial_reg_fc_cb_works)
+{
+	const struct mbreg_desc_s regs[] = {
+		{
+			.address=0x10u,
+			.type=MRTYPE_U32,
+			.access=MRACC_R_PTR | MRACC_W_FN,
+			.read={.pu32=&s_test_write_callback_u32},
+			.write={.fu32=test_write_callback_u32},
+		}
+	};
+	struct mbinst_s inst = {
+		.hold_regs=regs,
+		.n_hold_regs=sizeof regs / sizeof regs[0]
+	};
+	mbinst_init(&inst);
+
+	s_test_write_callback_u32 = 0u;
+
+	uint8_t res[MBPDU_SIZE_MAX];
+
+	/* Works upper part */
+	uint8_t pdu1_data[] = {
+		MBFC_WRITE_MULTIPLE_REGS,
+		0x00, 0x10, /* Start addr */
+		0x00, 0x01, /* n regs to write */
+		0x02, /* Data byte count */
+		0x12, 0x34}; /* Data reg 0x10 */
+	size_t res_size = mbpdu_handle_req(&inst, pdu1_data, sizeof pdu1_data, res);
+
+	ASSERT_EQ(5u, res_size);
+	ASSERT(!(res[0] & MB_ERR_FLG));
+	ASSERT_EQ(0x12340000u, s_test_write_callback_u32);
+
+	/* Works lower part */
+	uint8_t pdu2_data[] = {
+		MBFC_WRITE_MULTIPLE_REGS,
+		0x00, 0x11, /* Start addr */
+		0x00, 0x01, /* n regs to write */
+		0x02, /* Data byte count */
+		0x56, 0x78}; /* Data reg 0x11 */
+	res_size = mbpdu_handle_req(&inst, pdu2_data, sizeof pdu2_data, res);
+
+	ASSERT_EQ(5u, res_size);
+	ASSERT(!(res[0] & MB_ERR_FLG));
+	ASSERT_EQ(0x12345678u, s_test_write_callback_u32);
+}
+
+TEST(mbpdu_mask_write_res_works)
+{
+	uint16_t reg0 = 0b00010010;
+	const struct mbreg_desc_s regs[] = {
+		{
+			.address=0x00u,
+			.type=MRTYPE_U16,
+			.access=MRACC_RW_PTR,
+			.read={.pu16=&reg0},
+			.write={.pu16=&reg0},
+		},
+	};
+	struct mbinst_s inst = {
+		.hold_regs=regs,
+		.n_hold_regs=sizeof regs / sizeof regs[0]
+	};
+	mbinst_init(&inst);
+
+	uint8_t pdu_data[] = {
+		MBFC_MASK_WRITE_REG,
+		0x00, 0x00, /* Addr */
+		0x00, 0b11110010, /* AND mask */
+		0x00, 0b00100101, /* OR mask */
+	};
+
+	uint8_t res[MBPDU_SIZE_MAX];
+	size_t res_size = mbpdu_handle_req(&inst, pdu_data, sizeof pdu_data, res);
+
+	ASSERT_EQ(7u, res_size);
+	ASSERT(!(res[0] & MB_ERR_FLG));
+	ASSERT_EQ(MBFC_MASK_WRITE_REG, res[0]);
+	ASSERT_EQ(0x00, res[1]); /* Addr H */
+	ASSERT_EQ(0x00, res[2]); /* Addr L */
+	ASSERT_EQ(0x00, res[3]); /* AND mask H */
+	ASSERT_EQ(0b11110010, res[4]); /* AND mask L */
+	ASSERT_EQ(0x00, res[5]); /* OR mask H */
+	ASSERT_EQ(0b00100101, res[6]); /* OR mask L */
+
+	/* Check result */
+	ASSERT_EQ(0b00010111, reg0);
+}
+
+TEST(mbpdu_mask_write_invalid_request_length_fails)
+{
+	uint16_t reg0 = 0x1234;
+	const struct mbreg_desc_s regs[] = {
+		{
+			.address=0x00u,
+			.type=MRTYPE_U16,
+			.access=MRACC_RW_PTR,
+			.read={.pu16=&reg0},
+			.write={.pu16=&reg0},
+		},
+	};
+	struct mbinst_s inst = {
+		.hold_regs=regs,
+		.n_hold_regs=sizeof regs / sizeof regs[0]
+	};
+	mbinst_init(&inst);
+
+	/* Test with too short request */
+	uint8_t pdu_data_short[] = {
+		MBFC_MASK_WRITE_REG,
+		0x00, 0x00, /* Addr */
+		0x00, 0xFF, /* AND mask */
+		0x00, /* Missing OR mask low byte */
+	};
+
+	uint8_t res[MBPDU_SIZE_MAX];
+	size_t res_size = mbpdu_handle_req(&inst, pdu_data_short, sizeof pdu_data_short, res);
+
+	ASSERT_EQ(2u, res_size);
+	ASSERT(res[0] & MB_ERR_FLG);
+	ASSERT_EQ(MB_ILLEGAL_DATA_VAL, res[1]);
+
+	/* Test with too long request */
+	uint8_t pdu_data_long[] = {
+		MBFC_MASK_WRITE_REG,
+		0x00, 0x00, /* Addr */
+		0x00, 0xFF, /* AND mask */
+		0x00, 0x00, /* OR mask */
+		0x00, /* Extra byte */
+	};
+
+	res_size = mbpdu_handle_req(&inst, pdu_data_long, sizeof pdu_data_long, res);
+
+	ASSERT_EQ(2u, res_size);
+	ASSERT(res[0] & MB_ERR_FLG);
+	ASSERT_EQ(MB_ILLEGAL_DATA_VAL, res[1]);
+}
+
+TEST(mbpdu_mask_write_nonexistent_addr_fails)
+{
+	uint16_t reg0 = 0x1234;
+	const struct mbreg_desc_s regs[] = {
+		{
+			.address=0x10u,
+			.type=MRTYPE_U16,
+			.access=MRACC_RW_PTR,
+			.read={.pu16=&reg0},
+			.write={.pu16=&reg0},
+		},
+	};
+	struct mbinst_s inst = {
+		.hold_regs=regs,
+		.n_hold_regs=sizeof regs / sizeof regs[0]
+	};
+	mbinst_init(&inst);
+
+	uint8_t pdu_data[] = {
+		MBFC_MASK_WRITE_REG,
+		0x00, 0x00, /* Non-existent addr */
+		0x00, 0xFF, /* AND mask */
+		0x00, 0x00, /* OR mask */
+	};
+
+	uint8_t res[MBPDU_SIZE_MAX];
+	size_t res_size = mbpdu_handle_req(&inst, pdu_data, sizeof pdu_data, res);
+
+	ASSERT_EQ(2u, res_size);
+	ASSERT(res[0] & MB_ERR_FLG);
+	ASSERT_EQ(MB_ILLEGAL_DATA_ADDR, res[1]);
+}
+
+TEST(mbpdu_mask_write_readonly_reg_fails)
+{
+	uint16_t reg0 = 0x1234;
+	const struct mbreg_desc_s regs[] = {
+		{
+			.address=0x00u,
+			.type=MRTYPE_U16,
+			.access=MRACC_R_PTR, /* Read-only */
+			.read={.pu16=&reg0},
+		},
+	};
+	struct mbinst_s inst = {
+		.hold_regs=regs,
+		.n_hold_regs=sizeof regs / sizeof regs[0]
+	};
+	mbinst_init(&inst);
+
+	uint8_t pdu_data[] = {
+		MBFC_MASK_WRITE_REG,
+		0x00, 0x00, /* Addr */
+		0x00, 0xFF, /* AND mask */
+		0x00, 0x00, /* OR mask */
+	};
+
+	uint8_t res[MBPDU_SIZE_MAX];
+	size_t res_size = mbpdu_handle_req(&inst, pdu_data, sizeof pdu_data, res);
+
+	ASSERT_EQ(2u, res_size);
+	ASSERT(res[0] & MB_ERR_FLG);
+	ASSERT_EQ(MB_ILLEGAL_DATA_ADDR, res[1]);
+}
+
+TEST(mbpdu_mask_write_all_bits_set_works)
+{
+	uint16_t reg0 = 0x0000;
+	const struct mbreg_desc_s regs[] = {
+		{
+			.address=0x00u,
+			.type=MRTYPE_U16,
+			.access=MRACC_RW_PTR,
+			.read={.pu16=&reg0},
+			.write={.pu16=&reg0},
+		},
+	};
+	struct mbinst_s inst = {
+		.hold_regs=regs,
+		.n_hold_regs=sizeof regs / sizeof regs[0]
+	};
+	mbinst_init(&inst);
+
+	uint8_t pdu_data[] = {
+		MBFC_MASK_WRITE_REG,
+		0x00, 0x00, /* Addr */
+		0x00, 0x00, /* AND mask - keep no bits */
+		0xFF, 0xFF, /* OR mask - set all bits */
+	};
+
+	uint8_t res[MBPDU_SIZE_MAX];
+	size_t res_size = mbpdu_handle_req(&inst, pdu_data, sizeof pdu_data, res);
+
+	ASSERT_EQ(7u, res_size);
+	ASSERT(!(res[0] & MB_ERR_FLG));
+	ASSERT_EQ(MBFC_MASK_WRITE_REG, res[0]);
+	ASSERT_EQ(0xFFFF, reg0); /* All bits should be set */
+}
+
+TEST(mbpdu_mask_write_all_bits_clear_works)
+{
+	uint16_t reg0 = 0xFFFF;
+	const struct mbreg_desc_s regs[] = {
+		{
+			.address=0x00u,
+			.type=MRTYPE_U16,
+			.access=MRACC_RW_PTR,
+			.read={.pu16=&reg0},
+			.write={.pu16=&reg0},
+		},
+	};
+	struct mbinst_s inst = {
+		.hold_regs=regs,
+		.n_hold_regs=sizeof regs / sizeof regs[0]
+	};
+	mbinst_init(&inst);
+
+	uint8_t pdu_data[] = {
+		MBFC_MASK_WRITE_REG,
+		0x00, 0x00, /* Addr */
+		0x00, 0x00, /* AND mask - clear all bits */
+		0x00, 0x00, /* OR mask - no bits set */
+	};
+
+	uint8_t res[MBPDU_SIZE_MAX];
+	size_t res_size = mbpdu_handle_req(&inst, pdu_data, sizeof pdu_data, res);
+
+	ASSERT_EQ(7u, res_size);
+	ASSERT(!(res[0] & MB_ERR_FLG));
+	ASSERT_EQ(MBFC_MASK_WRITE_REG, res[0]);
+	ASSERT_EQ(0x0000, reg0); /* All bits should be cleared */
+}
+
+TEST(mbpdu_mask_write_selective_bits_works)
+{
+	uint16_t reg0 = 0b1010101010101010;
+	const struct mbreg_desc_s regs[] = {
+		{
+			.address=0x00u,
+			.type=MRTYPE_U16,
+			.access=MRACC_RW_PTR,
+			.read={.pu16=&reg0},
+			.write={.pu16=&reg0},
+		},
+	};
+	struct mbinst_s inst = {
+		.hold_regs=regs,
+		.n_hold_regs=sizeof regs / sizeof regs[0]
+	};
+	mbinst_init(&inst);
+
+	uint8_t pdu_data[] = {
+		MBFC_MASK_WRITE_REG,
+		0x00, 0x00, /* Addr */
+		0b11110000, 0b11110000, /* AND mask - preserve upper 4 bits of each byte */
+		0b00001111, 0b00001111, /* OR mask - set lower 4 bits of each byte */
+	};
+
+	uint8_t res[MBPDU_SIZE_MAX];
+	size_t res_size = mbpdu_handle_req(&inst, pdu_data, sizeof pdu_data, res);
+
+	ASSERT_EQ(7u, res_size);
+	ASSERT(!(res[0] & MB_ERR_FLG));
+	ASSERT_EQ(MBFC_MASK_WRITE_REG, res[0]);
+	/* Original: 1010101010101010
+	 * AND:      1111000011110000 -> 1010000010100000
+	 * OR:       0000111100001111 -> 1010111110101111
+	 */
+	ASSERT_EQ(0b1010111110101111, reg0);
+}
+
+TEST(mbpdu_mask_write_no_change_works)
+{
+	uint16_t reg0 = 0x1234;
+	const struct mbreg_desc_s regs[] = {
+		{
+			.address=0x00u,
+			.type=MRTYPE_U16,
+			.access=MRACC_RW_PTR,
+			.read={.pu16=&reg0},
+			.write={.pu16=&reg0},
+		},
+	};
+	struct mbinst_s inst = {
+		.hold_regs=regs,
+		.n_hold_regs=sizeof regs / sizeof regs[0]
+	};
+	mbinst_init(&inst);
+
+	uint8_t pdu_data[] = {
+		MBFC_MASK_WRITE_REG,
+		0x00, 0x00, /* Addr */
+		0xFF, 0xFF, /* AND mask - preserve all bits */
+		0x00, 0x00, /* OR mask - set no bits */
+	};
+
+	uint8_t res[MBPDU_SIZE_MAX];
+	size_t res_size = mbpdu_handle_req(&inst, pdu_data, sizeof pdu_data, res);
+
+	ASSERT_EQ(7u, res_size);
+	ASSERT(!(res[0] & MB_ERR_FLG));
+	ASSERT_EQ(MBFC_MASK_WRITE_REG, res[0]);
+	ASSERT_EQ(0x1234, reg0); /* Value should remain unchanged */
+}
+
+TEST(mbpdu_mask_write_high_address_works)
+{
+	uint16_t reg0 = 0x5555;
+	const struct mbreg_desc_s regs[] = {
+		{
+			.address=0xFFFF,
+			.type=MRTYPE_U16,
+			.access=MRACC_RW_PTR,
+			.read={.pu16=&reg0},
+			.write={.pu16=&reg0},
+		},
+	};
+	struct mbinst_s inst = {
+		.hold_regs=regs,
+		.n_hold_regs=sizeof regs / sizeof regs[0]
+	};
+	mbinst_init(&inst);
+
+	uint8_t pdu_data[] = {
+		MBFC_MASK_WRITE_REG,
+		0xFF, 0xFF, /* High address */
+		0xAA, 0xAA, /* AND mask */
+		0x11, 0x11, /* OR mask */
+	};
+
+	uint8_t res[MBPDU_SIZE_MAX];
+	size_t res_size = mbpdu_handle_req(&inst, pdu_data, sizeof pdu_data, res);
+
+	ASSERT_EQ(7u, res_size);
+	ASSERT(!(res[0] & MB_ERR_FLG));
+	ASSERT_EQ(MBFC_MASK_WRITE_REG, res[0]);
+	ASSERT_EQ(0xFF, res[1]); /* Addr H */
+	ASSERT_EQ(0xFF, res[2]); /* Addr L */
+	ASSERT_EQ(0xAA, res[3]); /* AND mask H */
+	ASSERT_EQ(0xAA, res[4]); /* AND mask L */
+	ASSERT_EQ(0x11, res[5]); /* OR mask H */
+	ASSERT_EQ(0x11, res[6]); /* OR mask L */
+	/* 0x5555 & 0xAAAA = 0x0000, then 0x0000 | 0x1111 = 0x1111 */
+	ASSERT_EQ(0x1111, reg0);
+}
+
+TEST(mbpdu_mask_write_u8_works)
+{
+	uint8_t reg0 = 0xAB;
+	const struct mbreg_desc_s regs[] = {
+		{
+			.address=0x00u,
+			.type=MRTYPE_U8,
+			.access=MRACC_RW_PTR,
+			.read={.pu8=&reg0},
+			.write={.pu8=&reg0},
+		},
+	};
+	struct mbinst_s inst = {
+		.hold_regs=regs,
+		.n_hold_regs=sizeof regs / sizeof regs[0]
+	};
+	mbinst_init(&inst);
+
+	uint8_t pdu_data[] = {
+		MBFC_MASK_WRITE_REG,
+		0x00, 0x00, /* Addr */
+		0x00, 0xF0, /* AND mask - preserve upper nibble */
+		0x00, 0x05, /* OR mask - set bits 0 and 2 in lower nibble */
+	};
+
+	uint8_t res[MBPDU_SIZE_MAX];
+	size_t res_size = mbpdu_handle_req(&inst, pdu_data, sizeof pdu_data, res);
+
+	ASSERT_EQ(7u, res_size);
+	ASSERT(!(res[0] & MB_ERR_FLG));
+	ASSERT_EQ(MBFC_MASK_WRITE_REG, res[0]);
+	/* 0xAB & 0xF0 = 0xA0, then 0xA0 | 0x05 = 0xA5 */
+	ASSERT_EQ(0xA5, reg0);
+}
+
+TEST(mbpdu_mask_write_u32_works)
+{
+	uint32_t reg0 = 0x12345678;
+	const struct mbreg_desc_s regs[] = {
+		{
+			.address=0x00u,
+			.type=MRTYPE_U32,
+			.access=MRACC_RW_PTR,
+			.read={.pu32=&reg0},
+			.write={.pu32=&reg0},
+		},
+	};
+	struct mbinst_s inst = {
+		.hold_regs=regs,
+		.n_hold_regs=sizeof regs / sizeof regs[0]
+	};
+	mbinst_init(&inst);
+
+	/* Test writing to the lower 16 bits (register address 0x01) */
+	uint8_t pdu_data[] = {
+		MBFC_MASK_WRITE_REG,
+		0x00, 0x01, /* Addr - lower 16 bits */
+		0xFF, 0x00, /* AND mask - clear lower 8 bits */
+		0x00, 0xFF, /* OR mask - set lower 8 bits to 0xFF */
+	};
+
+	uint8_t res[MBPDU_SIZE_MAX];
+	size_t res_size = mbpdu_handle_req(&inst, pdu_data, sizeof pdu_data, res);
+
+	ASSERT_EQ(7u, res_size);
+	ASSERT(!(res[0] & MB_ERR_FLG));
+	ASSERT_EQ(MBFC_MASK_WRITE_REG, res[0]);
+	/* Original: 0x12345678, lower 16 bits: 0x5678
+	 * 0x5678 & 0xFF00 = 0x5600, then 0x5600 | 0x00FF = 0x56FF
+	 * Result: 0x123456FF */
+	ASSERT_EQ(0x123456FF, reg0);
+}
+
+TEST(mbpdu_mask_write_i16_works)
+{
+	int16_t reg0 = -12345; /* 0xCFC7 */
+	const struct mbreg_desc_s regs[] = {
+		{
+			.address=0x00u,
+			.type=MRTYPE_I16,
+			.access=MRACC_RW_PTR,
+			.read={.pi16=&reg0},
+			.write={.pi16=&reg0},
+		},
+	};
+	struct mbinst_s inst = {
+		.hold_regs=regs,
+		.n_hold_regs=sizeof regs / sizeof regs[0]
+	};
+	mbinst_init(&inst);
+
+	uint8_t pdu_data[] = {
+		MBFC_MASK_WRITE_REG,
+		0x00, 0x00, /* Addr */
+		0x80, 0x00, /* AND mask - preserve only sign bit */
+		0x00, 0x01, /* OR mask - set LSB */
+	};
+
+	uint8_t res[MBPDU_SIZE_MAX];
+	size_t res_size = mbpdu_handle_req(&inst, pdu_data, sizeof pdu_data, res);
+
+	ASSERT_EQ(7u, res_size);
+	ASSERT(!(res[0] & MB_ERR_FLG));
+	ASSERT_EQ(MBFC_MASK_WRITE_REG, res[0]);
+	/* 0xCFC7 & 0x8000 = 0x8000, then 0x8000 | 0x0001 = 0x8001 */
+	ASSERT_EQ((int16_t)0x8001, reg0); /* Still negative: -32767 */
+}
+
+TEST(mbpdu_mask_write_i32_works)
+{
+	int32_t reg0 = -0x12345678;
+	const struct mbreg_desc_s regs[] = {
+		{
+			.address=0x00u,
+			.type=MRTYPE_I32,
+			.access=MRACC_RW_PTR,
+			.read={.pi32=&reg0},
+			.write={.pi32=&reg0},
+		},
+	};
+	struct mbinst_s inst = {
+		.hold_regs=regs,
+		.n_hold_regs=sizeof regs / sizeof regs[0]
+	};
+	mbinst_init(&inst);
+
+	/* Test writing to the upper 16 bits (register address 0x00) */
+	uint8_t pdu_data[] = {
+		MBFC_MASK_WRITE_REG,
+		0x00, 0x00, /* Addr - upper 16 bits */
+		0x00, 0xFF, /* AND mask - preserve lower 8 bits of upper word */
+		0xFF, 0x00, /* OR mask - set upper 8 bits of upper word */
+	};
+
+	uint8_t res[MBPDU_SIZE_MAX];
+	size_t res_size = mbpdu_handle_req(&inst, pdu_data, sizeof pdu_data, res);
+
+	ASSERT_EQ(7u, res_size);
+	ASSERT(!(res[0] & MB_ERR_FLG));
+	ASSERT_EQ(MBFC_MASK_WRITE_REG, res[0]);
+	/* Original: 0xEDCBA988 (two's complement of 0x12345678)
+	 * Upper 16 bits: 0xEDCB
+	 * 0xEDCB & 0x00FF = 0x00CB, then 0x00CB | 0xFF00 = 0xFFCB
+	 * Result: 0xFFCBA988 */
+	ASSERT_EQ((int32_t)0xFFCBA988, reg0);
+}
+
+TEST(mbpdu_mask_write_different_addresses_u32)
+{
+	uint32_t reg0 = 0xAABBCCDD;
+	const struct mbreg_desc_s regs[] = {
+		{
+			.address=0x10u,
+			.type=MRTYPE_U32,
+			.access=MRACC_RW_PTR,
+			.read={.pu32=&reg0},
+			.write={.pu32=&reg0},
+		},
+	};
+	struct mbinst_s inst = {
+		.hold_regs=regs,
+		.n_hold_regs=sizeof regs / sizeof regs[0]
+	};
+	mbinst_init(&inst);
+
+	/* First test: mask write on upper 16 bits (address 0x10) */
+	uint8_t pdu_data1[] = {
+		MBFC_MASK_WRITE_REG,
+		0x00, 0x10, /* Addr - upper 16 bits */
+		0x00, 0xFF, /* AND mask */
+		0x11, 0x00, /* OR mask */
+	};
+
+	uint8_t res[MBPDU_SIZE_MAX];
+	size_t res_size = mbpdu_handle_req(&inst, pdu_data1, sizeof pdu_data1, res);
+
+	ASSERT_EQ(7u, res_size);
+	ASSERT(!(res[0] & MB_ERR_FLG));
+	/* 0xAABB & 0x00FF = 0x00BB, then 0x00BB | 0x1100 = 0x11BB
+	 * Result: 0x11BBCCDD */
+	ASSERT_EQ(0x11BBCCDD, reg0);
+
+	/* Second test: mask write on lower 16 bits (address 0x11) */
+	uint8_t pdu_data2[] = {
+		MBFC_MASK_WRITE_REG,
+		0x00, 0x11, /* Addr - lower 16 bits */
+		0xFF, 0x00, /* AND mask */
+		0x00, 0x22, /* OR mask */
+	};
+
+	res_size = mbpdu_handle_req(&inst, pdu_data2, sizeof pdu_data2, res);
+
+	ASSERT_EQ(7u, res_size);
+	ASSERT(!(res[0] & MB_ERR_FLG));
+	/* 0xCCDD & 0xFF00 = 0xCC00, then 0xCC00 | 0x0022 = 0xCC22
+	 * Result: 0x11BBCC22 */
+	ASSERT_EQ(0x11BBCC22, reg0);
+}
+
+TEST(mbpdu_mask_write_signed_negative_preservation)
+{
+	int16_t reg0 = -1; /* 0xFFFF */
+	const struct mbreg_desc_s regs[] = {
+		{
+			.address=0x00u,
+			.type=MRTYPE_I16,
+			.access=MRACC_RW_PTR,
+			.read={.pi16=&reg0},
+			.write={.pi16=&reg0},
+		},
+	};
+	struct mbinst_s inst = {
+		.hold_regs=regs,
+		.n_hold_regs=sizeof regs / sizeof regs[0]
+	};
+	mbinst_init(&inst);
+
+	uint8_t pdu_data[] = {
+		MBFC_MASK_WRITE_REG,
+		0x00, 0x00, /* Addr */
+		0xFF, 0xFE, /* AND mask - clear LSB only */
+		0x00, 0x00, /* OR mask - set nothing */
+	};
+
+	uint8_t res[MBPDU_SIZE_MAX];
+	size_t res_size = mbpdu_handle_req(&inst, pdu_data, sizeof pdu_data, res);
+
+	ASSERT_EQ(7u, res_size);
+	ASSERT(!(res[0] & MB_ERR_FLG));
+	/* 0xFFFF & 0xFFFE = 0xFFFE, then 0xFFFE | 0x0000 = 0xFFFE */
+	ASSERT_EQ((int16_t)0xFFFE, reg0); /* -2 */
+}
+
+static uint16_t s_test_mask_write_fn_value = 0x5555;
+
+static uint16_t test_mask_write_read_fn(void)
+{
+	return s_test_mask_write_fn_value;
+}
+
+static enum mbstatus_e test_mask_write_write_fn(uint16_t value)
+{
+	s_test_mask_write_fn_value = value;
+	return MB_OK;
+}
+
+TEST(mbpdu_mask_write_function_access_works)
+{
+	s_test_mask_write_fn_value = 0xAAAA;
+
+	const struct mbreg_desc_s regs[] = {
+		{
+			.address=0x00u,
+			.type=MRTYPE_U16,
+			.access=MRACC_RW_FN,
+			.read={.fu16=test_mask_write_read_fn},
+			.write={.fu16=test_mask_write_write_fn},
+		},
+	};
+	struct mbinst_s inst = {
+		.hold_regs=regs,
+		.n_hold_regs=sizeof regs / sizeof regs[0]
+	};
+	mbinst_init(&inst);
+
+	uint8_t pdu_data[] = {
+		MBFC_MASK_WRITE_REG,
+		0x00, 0x00, /* Addr */
+		0x0F, 0x0F, /* AND mask - preserve lower nibbles */
+		0x50, 0x50, /* OR mask - set specific pattern in upper nibbles */
+	};
+
+	uint8_t res[MBPDU_SIZE_MAX];
+	size_t res_size = mbpdu_handle_req(&inst, pdu_data, sizeof pdu_data, res);
+
+	ASSERT_EQ(7u, res_size);
+	ASSERT(!(res[0] & MB_ERR_FLG));
+	ASSERT_EQ(MBFC_MASK_WRITE_REG, res[0]);
+	/* 0xAAAA & 0x0F0F = 0x0A0A, then 0x0A0A | 0x5050 = 0x5A5A */
+	ASSERT_EQ(0x5A5A, s_test_mask_write_fn_value);
 }
 
 TEST_MAIN(
@@ -2464,5 +3133,22 @@ TEST_MAIN(
 	mbpdu_read_write_regs_commit_callback_executed,
 	mbpdu_read_write_regs_zero_read_quantity_fails,
 	mbpdu_read_write_regs_zero_write_quantity_fails,
-	mbpdu_write_partial_reg_fc_cb_fails
+	mbpdu_write_partial_reg_fc_cb_fails_missing_read,
+	mbpdu_write_partial_reg_fc_cb_works,
+	mbpdu_mask_write_res_works,
+	mbpdu_mask_write_invalid_request_length_fails,
+	mbpdu_mask_write_nonexistent_addr_fails,
+	mbpdu_mask_write_readonly_reg_fails,
+	mbpdu_mask_write_all_bits_set_works,
+	mbpdu_mask_write_all_bits_clear_works,
+	mbpdu_mask_write_selective_bits_works,
+	mbpdu_mask_write_no_change_works,
+	mbpdu_mask_write_high_address_works,
+	mbpdu_mask_write_u8_works,
+	mbpdu_mask_write_u32_works,
+	mbpdu_mask_write_i16_works,
+	mbpdu_mask_write_i32_works,
+	mbpdu_mask_write_different_addresses_u32,
+	mbpdu_mask_write_signed_negative_preservation,
+	mbpdu_mask_write_function_access_works
 );

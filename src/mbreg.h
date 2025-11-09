@@ -427,4 +427,22 @@ extern enum mbstatus_e mbreg_write(
 	const uint8_t *val,
 	size_t *n_written);
 
+/**
+ * @brief Write masked Modbus register
+ *
+ * @param reg Pointer to the register descriptor
+ * @param addr Address to write to (can be sub-address within a multi-word register)
+ * @param and_mask
+ * @param or_mask
+ *
+ * @return Modbus status code
+ *
+ * @warning This function does not check write permissions - call mbreg_write_allowed() first
+ */
+extern enum mbstatus_e mbreg_mask_write(
+	const struct mbreg_desc_s *reg,
+	uint16_t addr,
+	uint16_t and_mask,
+	uint16_t or_mask);
+
 #endif /* MBREG_H_INCLUDED */

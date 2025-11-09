@@ -328,6 +328,59 @@ extern enum mbstatus_e mbfn_write_regs(
 		res);
 }
 
+extern enum mbstatus_e mb_fn_mask_write_reg(
+	const struct mbinst_s *inst,
+	const struct mbreg_desc_s *regs,
+	size_t n_regs,
+	const uint8_t *req,
+	size_t req_len,
+	struct mbpdu_buf_s *res)
+{
+	uint16_t addr, and_mask, or_mask;
+	const struct mbreg_desc_s *reg;
+	enum mbstatus_e status;
+
+	if ((inst==NULL) || (regs==NULL) || (req==NULL) || (res==NULL)) return MB_DEV_FAIL;
+
+	if (req[0]!=MBFC_MASK_WRITE_REG) {
+		return MB_DEV_FAIL;
+	}
+
+	if (req_len != 7u) { /* Function code + Addr + AND mask + OR mask */
+		return MB_ILLEGAL_DATA_VAL;
+	}
+
+	addr = betou16(req+1u);
+	and_mask = betou16(req+3u);
+	or_mask = betou16(req+5u);
+
+	if ((reg = mbreg_find_desc(regs, n_regs, addr)) == NULL) {
+		return MB_ILLEGAL_DATA_ADDR;
+	}
+
+	if (mbreg_write_allowed(reg, addr, addr, 1u, req+3u) != 1u) {
+		return MB_ILLEGAL_DATA_ADDR;
+	}
+
+	status = mbreg_mask_write(reg, addr, and_mask, or_mask);
+	if (status!=MB_OK) return status;
+
+	if (reg->post_write_cb!=NULL) {
+		reg->post_write_cb();
+	}
+	if (inst->commit_regs_write_cb!=NULL) {
+		inst->commit_regs_write_cb(inst);
+	}
+
+	/* Prepare success response */
+	u16tobe(addr, res->p+1u);
+	u16tobe(and_mask, res->p+3u);
+	u16tobe(or_mask, res->p+5u);
+	res->size = 7u;
+
+	return MB_OK;
+}
+
 extern enum mbstatus_e mbfn_read_write_regs(
 	const struct mbinst_s *inst,
 	const struct mbreg_desc_s *regs,
