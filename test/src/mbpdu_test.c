@@ -2403,6 +2403,48 @@ TEST(mbpdu_write_partial_reg_fc_cb_fails)
 	ASSERT_EQ(0x12345678u, s_test_write_callback_u32);
 }
 
+TEST(mbpdu_mask_write_res_works)
+{
+	uint16_t reg0 = 0b00010010;
+	const struct mbreg_desc_s regs[] = {
+		{
+			.address=0x00u,
+			.type=MRTYPE_U16,
+			.access=MRACC_RW_PTR,
+			.read={.pu16=&reg0},
+			.write={.pu16=&reg0},
+		},
+	};
+	struct mbinst_s inst = {
+		.hold_regs=regs,
+		.n_hold_regs=sizeof regs / sizeof regs[0]
+	};
+	mbinst_init(&inst);
+
+	uint8_t pdu_data[] = {
+		MBFC_MASK_WRITE_REG,
+		0x00, 0x00, /* Addr */
+		0x00, 0b11110010, /* AND mask */
+		0x00, 0b00100101, /* OR mask */
+	};
+
+	uint8_t res[MBPDU_SIZE_MAX];
+	size_t res_size = mbpdu_handle_req(&inst, pdu_data, sizeof pdu_data, res);
+
+	ASSERT_EQ(7u, res_size);
+	ASSERT(!(res[0] & MB_ERR_FLG));
+	ASSERT_EQ(MBFC_MASK_WRITE_REG, res[0]);
+	ASSERT_EQ(0x00, res[1]); /* Addr H */
+	ASSERT_EQ(0x00, res[2]); /* Addr L */
+	ASSERT_EQ(0x00, res[3]); /* AND mask H */
+	ASSERT_EQ(0b11110010, res[4]); /* AND mask L */
+	ASSERT_EQ(0x00, res[5]); /* OR mask H */
+	ASSERT_EQ(0b00100101, res[6]); /* OR mask L */
+
+	/* Check result */
+	ASSERT_EQ(0b00010111, reg0);
+}
+
 TEST_MAIN(
 	mbpdu_read_holding_reg_works,
 	mbpdu_read_input_reg_works,
@@ -2464,5 +2506,6 @@ TEST_MAIN(
 	mbpdu_read_write_regs_commit_callback_executed,
 	mbpdu_read_write_regs_zero_read_quantity_fails,
 	mbpdu_read_write_regs_zero_write_quantity_fails,
-	mbpdu_write_partial_reg_fc_cb_fails
+	mbpdu_write_partial_reg_fc_cb_fails,
+	mbpdu_mask_write_res_works
 );

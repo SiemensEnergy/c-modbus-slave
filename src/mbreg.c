@@ -567,7 +567,7 @@ static enum mbstatus_e write_ptr_partial(
 	n_copy = min(reg_size-buf_offset, n_remaining_regs*2u);
 	(void)memcpy(buf+buf_offset, val, n_copy);
 
-	*n_written = n_copy / 2u;
+	if (n_written) *n_written = n_copy / 2u;
 
 	/* Write the modified value */
 	return write_ptr(reg, buf);
@@ -637,7 +637,7 @@ static enum mbstatus_e write_block_partial(
 	n_copy = min(reg_size-buf_offset, n_remaining_regs*2u);
 	(void)memcpy(buf+buf_offset, val, n_copy);
 
-	*n_written = n_copy / 2u;
+	if (n_written) *n_written = n_copy / 2u;
 
 	/* Write the modified value */
 	return write_block(reg, addr, buf);
@@ -690,7 +690,7 @@ extern enum mbstatus_e mbreg_write(
 			return MB_DEV_FAIL; /* Writing partial to a function doesn't make any sense */
 		}
 	} else { /* Full reg write */
-		*n_written = reg_size_w;
+		if (n_written) *n_written = reg_size_w;
 
 		if ((reg->type & MRTYPE_BLOCK) != 0) {
 			return write_block(reg, addr, val);
@@ -702,4 +702,28 @@ extern enum mbstatus_e mbreg_write(
 			}
 		}
 	}
+}
+
+extern enum mbstatus_e mbreg_mask_write(
+	const struct mbreg_desc_s *reg,
+	uint16_t addr,
+	uint16_t and_mask,
+	uint16_t or_mask)
+{
+	uint8_t buf[2];
+	uint16_t val;
+
+	switch (mbreg_read(reg, addr, sizeof buf, buf, 0)) {
+	case MBREG_READ_NO_ACCESS:
+	case MBREG_READ_LOCKED: return MB_ILLEGAL_DATA_ADDR;
+	case MBREG_READ_DEV_FAIL: return MB_DEV_FAIL;
+	default: break;
+	}
+
+	/* Apply the masks write */
+	val = betou16(buf);
+	val = (val & and_mask) | (or_mask & (~and_mask));
+	u16tobe(val, buf);
+
+	return mbreg_write(reg, addr, sizeof buf, buf, NULL);
 }

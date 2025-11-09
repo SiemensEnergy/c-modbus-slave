@@ -137,6 +137,35 @@ extern enum mbstatus_e mbfn_write_regs(
 	const uint8_t *req,
 	size_t req_len,
 	struct mbpdu_buf_s *res);
+/**
+ * @brief Write to a register using a mask and a value
+ *
+ * Implements Modbus function 0x16 (Mask Write Register).
+ *
+ * @param inst Modbus instance containing configuration
+ * @param regs Array of register descriptors (holding registers only)
+ * @param n_regs Number of register descriptors in the array
+ * @param req Pointer to the request PDU (function_code + address + and_mask + or_mask)
+ * @param req_len Length of the request PDU (expected == 7)
+ * @param res Pointer to the response PDU structure to populate
+ *
+ * @retval MB_OK Success - register written and response prepared
+ * @retval MB_DEV_FAIL Invalid parameters
+ * @retval MB_ILLEGAL_DATA_VAL Invalid request format or size
+ * @retval MB_ILLEGAL_DATA_ADDR Register not found, not writable, or write failed
+ *
+ * @note Request format: [function_code][addr_hi][addr_lo][and_mask_hi][and_mask_lo][or_mask_hi][or_mask_lo]
+ * @note The response echoes the request data
+ * @note Calls post_write_cb callback if defined on the register
+ * @note Calls commit_regs_write_cb callback if defined on the instance
+ */
+extern enum mbstatus_e mb_fn_mask_write_reg(
+	const struct mbinst_s *inst,
+	const struct mbreg_desc_s *regs,
+	size_t n_regs,
+	const uint8_t *req,
+	size_t req_len,
+	struct mbpdu_buf_s *res);
 
 /**
  * @brief Reads and writes multiple Modbus holding registers in a single operation
