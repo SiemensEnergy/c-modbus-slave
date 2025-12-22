@@ -3,6 +3,8 @@
  * @brief Modbus files function handles - Read/Write file records
  * @author Jonas Almås
  *
+ * @details This module implements Modbus function codes for file record operations.
+ *
  * @see mbfile.h for file descriptor structure
  * @see mbpdu.h for protocol data unit handling
  */

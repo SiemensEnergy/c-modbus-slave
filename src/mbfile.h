@@ -2,6 +2,9 @@
  * @file mbfile.h
  * @brief Modbus File - Structure and functions for file record handling
  * @author Jonas Almås
+ *
+ * @details This module defines the file descriptor structured and functions
+ * for operating on it.
  */
 
 /*

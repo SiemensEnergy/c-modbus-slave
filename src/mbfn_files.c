@@ -1,6 +1,17 @@
 /**
  * @file mbfn_files.c
+ * @brief Implementation of Modbus file records function handles
  * @author Jonas Almås
+ *
+ * MISRA Deviations:
+ * - Rule 15.5: A function should have a single point of exit at the end
+ *   Rationale: Multiple returns improve readability and reduce nesting for error conditions
+ *   Mitigation: Each return path clearly documented with appropriate error handling
+ * - Rule 15.7: All if … else if constructs shall be terminated with an else statement
+ *   Rationale: Improves readability and code maintainability
+ * - Rule 18.4: The +, -, += and -= operators should not be applied to an expression of pointer type
+ *   Rationale: Pointer arithmetic necessary for efficient buffer parsing and generation
+ *   Mitigation: Bounds checking performed, arithmetic limited to validated buffer operations
  */
 
 /*
