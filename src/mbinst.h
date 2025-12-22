@@ -176,6 +176,15 @@ struct mbinst_s {
 	void (*commit_regs_write_cb)(const struct mbinst_s *inst);
 
 	/**
+	 * @brief Allow extended file record numbers
+	 *
+	 * Remove limit of 10'000 file records.
+	 *
+	 * @note Value is a u16
+	 */
+	int allow_ext_file_recs;
+
+	/**
 	 * @brief Serial specific configuration
 	 */
 	struct {

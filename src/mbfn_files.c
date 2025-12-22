@@ -136,7 +136,8 @@ extern enum mbstatus_e mbfn_file_read(
 		if (file_no==0u) { /* Range: (0x0000,0xFFFF] */
 			return MB_ILLEGAL_DATA_VAL;
 		}
-		if (record_no>MAX_REC_NO) { /* Range: [0,0x270F] */
+		if (!inst->allow_ext_file_recs
+				&& (record_no>MAX_REC_NO)) { /* Range: [0,0x270F] */
 			return MB_ILLEGAL_DATA_ADDR;
 		}
 		if (record_length==0u) {
