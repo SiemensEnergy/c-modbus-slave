@@ -42,6 +42,7 @@
 
 #include "mbdef.h"
 #include "mbcoil.h"
+#include "mbfile.h"
 #include "mbpdu.h"
 #include "mbreg.h"
 #include <stddef.h>
@@ -111,6 +112,10 @@ struct mbinst_s {
 	 */
 	const struct mbreg_desc_s *hold_regs;
 	size_t n_hold_regs; /**< Number of holding register descriptors */
+
+	/* TODO */
+	const struct mbfile_desc_s *files;
+	size_t n_files;
 
 	/**
 	 * @brief Custom function handler for unsupported or missing function codes

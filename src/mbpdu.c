@@ -37,6 +37,7 @@
 #include "mbdef.h"
 #include "mbfn_coils.h"
 #include "mbfn_digs.h"
+#include "mbfn_files.h"
 #include "mbfn_regs.h"
 #include "mbfn_serial.h"
 #include <stddef.h>
@@ -98,8 +99,16 @@ static enum mbstatus_e handle(
 		}
 		break;
 	case MBFC_REPORT_SLAVE_ID: break; /* Should be implemented through mbinst_s::handle_fn_cb */
-	case MBFC_READ_FILE_RECORD: break; /* Not implemented */
-	case MBFC_WRITE_FILE_RECORD: break; /* Not implemented */
+	case MBFC_READ_FILE_RECORD:
+		if (inst->files!=NULL) {
+			return mbfn_file_read(inst, req, req_len, res);
+		}
+		break;
+	case MBFC_WRITE_FILE_RECORD:
+		if (inst->files!=NULL) {
+			return mbfn_file_write(inst, req, req_len, res);
+		}
+		break;
 	case MBFC_MASK_WRITE_REG:
 		if (inst->hold_regs!=NULL) {
 			return mb_fn_mask_write_reg(inst, inst->hold_regs, inst->n_hold_regs, req, req_len, res);

@@ -1,0 +1,132 @@
+/**
+ * @file mbfile.c
+ * @author Jonas Almås
+ */
+
+/*
+ * Copyright (c) 2025 Siemens Energy AS
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OR CONDITIONS OF ANY KIND,
+ * EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OR CONDITIONS
+ * OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO
+ * EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES
+ * OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT
+ * (INCLUDING NEGLIGENCE) OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH
+ * THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+ *
+ * Authorized representative: Edgar Vorland, SE TI EAD MF&P SUS OMS, Group Manager Electronics
+ */
+
+#include "mbfile.h"
+#include "mbreg.h"
+
+enum {BSEARCH_THRESHOLD=16u};
+
+extern const struct mbfile_desc_s *mbfile_find(
+	const struct mbfile_desc_s *files,
+	size_t n_files,
+	uint16_t file_no)
+{
+	const struct mbfile_desc_s *file;
+	size_t l, m, r;
+	size_t i;
+
+	if (!files || (n_files==0u)) return NULL;
+
+	if (n_files > BSEARCH_THRESHOLD) { /* Only use binary search for larger descriptor sets */
+		l = 0u;
+		r = n_files - 1u;
+
+		while (l <= r) {
+			m = l + (r - l) / 2u;
+			file = files + m;
+
+			if (file->file_no == file_no) {
+				return file;
+			} else if (file->file_no < file_no) {
+				l = m + 1u;
+			} else {
+				if (m == 0u) break; /* Prevent underflow */
+				r = m - 1u;
+			}
+		}
+	} else {
+		for (i=0u; i<n_files; ++i) {
+			file = files + i;
+			if (file->file_no == file_no) {
+				return file;
+			}
+		}
+	}
+
+	return NULL;
+}
+
+extern enum mbfile_read_status_e mbfile_read(
+	const struct mbfile_desc_s *file,
+	uint16_t record_no,
+	uint16_t record_length,
+	struct mbpdu_buf_s *res)
+{
+	uint16_t addr, reg_offs;
+	const struct mbreg_desc_s *reg;
+	size_t n_read_regs;
+
+	/* If we read multiple records and one of them doesn't exist,
+	   we just fill that with zero.
+	   We don't want to do this if the first record is missing.
+	 */
+	if (!mbreg_find_desc(file->records, file->n_records, record_no)) {
+		return MBFILE_READ_ILLEGAL_ADDR;
+	}
+
+	for (reg_offs=0u; reg_offs < record_length; ) {
+		addr = record_no + reg_offs;
+		if ((reg = mbreg_find_desc(file->records, file->n_records, addr)) != NULL) {
+			n_read_regs = mbreg_read(
+				reg,
+				addr,
+				record_length-reg_offs,
+				res ? (res->p + res->size) : NULL,
+				0);
+			switch (n_read_regs) {
+			case MBREG_READ_DEV_FAIL:
+				return MBFILE_READ_DEVICE_ERR;
+			case MBREG_READ_LOCKED:
+			case MBREG_READ_NO_ACCESS:
+				if (res!=NULL) {
+					res->p[res->size] = 0x00u;
+					res->p[res->size+1u] = 0x00u;
+					res->size += 2u;
+				}
+				++reg_offs;
+				break;
+			default:
+				if (res!=NULL) {
+					res->size += n_read_regs*2u;
+				}
+				reg_offs += (uint16_t)n_read_regs;
+				break;
+			}
+		} else {
+			if (res!=NULL) {
+				res->p[res->size] = 0x00u;
+				res->p[res->size+1u] = 0x00u;
+				res->size += 2u;
+			}
+			++reg_offs;
+		}
+	}
+
+	return MBFILE_READ_OK;
+}
