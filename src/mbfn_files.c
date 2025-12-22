@@ -111,7 +111,7 @@ extern enum mbstatus_e mbfn_file_read(
 
 	byte_count = req[1];
 
-	if ((byte_count < MIN_READ_REQ_SIZE)
+	if ((byte_count < READ_SUB_REQ_SIZE)
 			|| (byte_count > MAX_READ_REQ_BYTE_COUNT)
 			|| (byte_count != (req_len-READ_REQ_HEADER_SIZE))
 			|| ((byte_count % READ_SUB_REQ_SIZE) != 0)) {
