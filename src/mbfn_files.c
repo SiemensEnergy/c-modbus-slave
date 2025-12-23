@@ -227,10 +227,9 @@ extern enum mbstatus_e mbfn_file_write(
 	size_t req_len,
 	struct mbpdu_buf_s *res)
 {
-	size_t i;
 	uint8_t byte_count;
 	size_t remaining_bytes;
-	const uint8_t *p;
+	const uint8_t *p, *base;
 	uint16_t file_no, record_no, record_length;
 	const struct mbfile_desc_s *file;
 	enum mbstatus_e status;
@@ -252,10 +251,10 @@ extern enum mbstatus_e mbfn_file_write(
 
 	/* Validate request and ensure all registers in all files can be written
 	   to before writing anything. */
-	p = req + WRITE_REQ_HEADER_SIZE;
-	i=0u;
-	while ((i++ < 1000u) && ((p - (req + WRITE_REQ_HEADER_SIZE)) < byte_count)) {
-		remaining_bytes = byte_count - (p - (req + WRITE_REQ_HEADER_SIZE));
+	base = req + WRITE_REQ_HEADER_SIZE;
+	p = base;
+	while ((p-base) < byte_count) {
+		remaining_bytes = byte_count - (p-base);
 		if (remaining_bytes < WRITE_SUB_REQ_MIN_SIZE) {
 			return MB_ILLEGAL_DATA_VAL;
 		}
@@ -266,7 +265,6 @@ extern enum mbstatus_e mbfn_file_write(
 		file_no = betou16(p + WRITE_SUB_REQ_FILE_NO_POS);
 		record_no = betou16(p + WRITE_SUB_REQ_REC_NO_POS);
 		record_length = betou16(p + WRITE_SUB_REQ_REC_LEN_POS);
-		p += WRITE_SUB_REQ_HEADER_SIZE;
 
 		if (file_no==0u) { /* Range: (0x0000,0xFFFF] */
 			return MB_ILLEGAL_DATA_ADDR;
@@ -285,6 +283,8 @@ extern enum mbstatus_e mbfn_file_write(
 			return MB_ILLEGAL_DATA_ADDR;
 		}
 
+		p += WRITE_SUB_REQ_HEADER_SIZE;
+
 		status = mbfile_write_allowed(file, record_no, record_length, p);
 		if (status != MB_OK) {
 			return status;
@@ -292,17 +292,14 @@ extern enum mbstatus_e mbfn_file_write(
 
 		p += record_length * 2u;
 	}
-	if (i==1000u) {
-		return MB_DEV_FAIL;
-	}
 
 	res->p[1] = byte_count;
 	res->size = 2u;
 
 	/* Write the actual data */
-	p = req + WRITE_REQ_HEADER_SIZE;
-	i=0u;
-	while ((i++ < 1000u) && ((p - (req + WRITE_REQ_HEADER_SIZE)) < byte_count)) {
+	base = req + WRITE_REQ_HEADER_SIZE;
+	p = base;
+	while ((p-base) < byte_count) {
 		file_no = betou16(p + WRITE_SUB_REQ_FILE_NO_POS);
 		record_no = betou16(p + WRITE_SUB_REQ_REC_NO_POS);
 		record_length = betou16(p + WRITE_SUB_REQ_REC_LEN_POS);
@@ -325,9 +322,6 @@ extern enum mbstatus_e mbfn_file_write(
 		res->size += record_length * 2u;
 
 		p += record_length * 2u;
-	}
-	if (i==1000u) {
-		return MB_DEV_FAIL;
 	}
 
 	if (inst->commit_regs_write_cb!=NULL) {
