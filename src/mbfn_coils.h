@@ -46,7 +46,7 @@
 
 enum {
 	MBCOIL_ON=0xFF00u,
-	MBCOIL_OFF=0x000u,
+	MBCOIL_OFF=0x0000u,
 };
 
 /**

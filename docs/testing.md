@@ -132,4 +132,16 @@ extern int mbtest_regs_validate_all(
     const struct mbreg_desc_s *regs,
     size_t n_regs,
     uint16_t *issue_addr);
+
+/**
+ * @brief Check that all file numbers are ascending and that there no no duplicates
+ * @param issue_file_no Optional - e.g. printf("0x%04x\n", issue_file_no);
+ * @return 1 success, 0 failure
+ *
+ * @note Assumes files are in ascending order
+ */
+extern int mbtest_files_asc_and_unique(
+    const struct mbfile_desc_s *files,
+    size_t n_files,
+    uint16_t *issue_file_no);
 ```

@@ -68,6 +68,13 @@ extern size_t mbadu_tcp_handle_req(
 		return 0u;
 	}
 
+	/** @note Length includes unit id */
+	if ((length < 1u)
+			|| (length-1u) > MBPDU_DATA_SIZE_MAX
+			|| (req_len < (length-1u+MBAP_SIZE))) {
+		return 0u;
+	}
+
 	pdu_size = mbpdu_handle_req(
 		inst,
 		req + MBAP_SIZE,
