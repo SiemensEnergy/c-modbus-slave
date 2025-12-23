@@ -3,8 +3,14 @@
  * @brief Modbus File - Structure and functions for file record handling
  * @author Jonas Almås
  *
- * @details This module defines the file descriptor structured and functions
- * for operating on it.
+ * @details This module implements Modbus file record functionality (function
+ * codes 0x14 and 0x15) by defining file descriptor structures and operations
+ * for organizing register data into logical file-like structures. File records
+ * provide an alternative to standard register access patterns, allowing complex
+ * data organization with file numbers and record-based addressing.
+ *
+ * @see mbreg.h for register descriptor structures used within file records
+ * @see mbinst.h for integration with Modbus slave instances
  */
 
 /*
@@ -40,19 +46,43 @@
 #include <stdint.h>
 
 /**
- * @brief Modbus file descriptor
+ * @brief Modbus file descriptor for file record operations
  *
- * @note All files in an array must be sorted by file number in ascending order
+ * Describes a single Modbus file that contains an array of register records.
+ * Files provide a hierarchical organization method where each file is identified
+ * by a file number and contains multiple register records that can be accessed
+ * individually using record numbers and lengths.
+ *
+ * @note All files in an array must be sorted by file number in ascending order for binary search
+ * @note Used with Modbus function codes 0x14 (Read File Record) and 0x15 (Write File Record)
  */
 struct mbfile_desc_s {
 	/**
-	 * @brief Modbus file number
+	 * @brief Modbus file number identifier
 	 *
-	 * @note Valid range: [0,9999] or [0x0000,0x270F]
+	 * Unique identifier for this file within the Modbus address space.
+	 * Used by masters to specify which file to access in file record operations.
+	 *
+	 * @note Must be unique within the file descriptor array
 	 */
 	uint16_t file_no;
 
+	/**
+	 * @brief Array of register record descriptors within this file
+	 *
+	 * Points to an array of register descriptors that define the data
+	 * records contained within this file. Each record can have different
+	 * data types, sizes, and access permissions.
+	 *
+	 * @note Must be sorted by register address in ascending order for binary search
+	 */
 	const struct mbreg_desc_s *records;
+
+	/**
+	 * @brief Number of register records in this file
+	 *
+	 * Specifies the count of register record descriptors in the records array.
+	 */
 	size_t n_records;
 };
 
@@ -62,11 +92,41 @@ enum mbfile_read_status_e {
 	MBFILE_READ_DEVICE_ERR,
 };
 
+/**
+ * @brief Find a file descriptor by file number
+ *
+ * Searches through an array of file descriptors to locate the descriptor
+ * matching the specified file number. Uses binary search for efficient lookup,
+ * requiring the file array to be sorted in ascending order by file number.
+ *
+ * @param files Pointer to array of file descriptors to search
+ * @param n_files Number of file descriptors in the array
+ * @param file_no Modbus file number to search for
+ *
+ * @return Pointer to matching file descriptor, or NULL if not found
+ *
+ * @note The files array must be sorted by file_no in ascending order
+ * @note Complexity: O(log n) due to binary search algorithm
+ */
 extern const struct mbfile_desc_s *mbfile_find(
 	const struct mbfile_desc_s *files,
 	size_t n_files,
 	uint16_t file_no);
 
+/**
+ * @brief Read data from a file record
+ *
+ * @param file Pointer to the file descriptor containing the target record
+ * @param record_no Starting record number within the file (0-based index)
+ * @param record_length Number of 16-bit registers to read from the record
+ * @param res Pointer to response buffer structure to populate with read data
+ *
+ * @retval MBFILE_READ_OK Success - data copied to response buffer
+ * @retval MBFILE_READ_ILLEGAL_ADDR Invalid record number or length
+ * @retval MBFILE_READ_DEVICE_ERR Internal error during read operation
+ *
+ * @note The response buffer (res) must have sufficient space for the requested data
+ */
 extern enum mbfile_read_status_e mbfile_read(
 	const struct mbfile_desc_s *file,
 	uint16_t record_no,

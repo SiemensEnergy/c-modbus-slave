@@ -74,17 +74,17 @@ TEST(mbpdu_file_read_works)
 
 	ASSERT_EQ(5u, res[2]); /* Sub-req 1, File resp. length */
 	ASSERT_EQ(0x06u, res[3]); /* Sub-req 1, File resp. length */
-	ASSERT_EQ(0x12u, res[4]); /* Sub-req 1, Data lo */
-	ASSERT_EQ(0x34u, res[5]); /* Sub-req 1, Data hi */
-	ASSERT_EQ(0xABu, res[6]); /* Sub-req 1, Data lo */
-	ASSERT_EQ(0xCDu, res[7]); /* Sub-req 1, Data hi */
+	ASSERT_EQ(0x12u, res[4]); /* Sub-req 1, Data hi */
+	ASSERT_EQ(0x34u, res[5]); /* Sub-req 1, Data lo */
+	ASSERT_EQ(0xABu, res[6]); /* Sub-req 1, Data hi */
+	ASSERT_EQ(0xCDu, res[7]); /* Sub-req 1, Data lo */
 
 	ASSERT_EQ(5u, res[8]); /* Sub-req 2, File resp. length */
 	ASSERT_EQ(0x06u, res[9]); /* Sub-req 2, File resp. length */
-	ASSERT_EQ(0xDEu, res[10]); /* Sub-req 2, Data lo */
-	ASSERT_EQ(0xADu, res[11]); /* Sub-req 2, Data hi */
-	ASSERT_EQ(0xBEu, res[12]); /* Sub-req 2, Data lo */
-	ASSERT_EQ(0xEFu, res[13]); /* Sub-req 2, Data hi */
+	ASSERT_EQ(0xDEu, res[10]); /* Sub-req 2, Data hi */
+	ASSERT_EQ(0xADu, res[11]); /* Sub-req 2, Data lo */
+	ASSERT_EQ(0xBEu, res[12]); /* Sub-req 2, Data hi */
+	ASSERT_EQ(0xEFu, res[13]); /* Sub-req 2, Data lo */
 }
 
 TEST_MAIN(
