@@ -147,3 +147,73 @@ extern enum mbfile_read_status_e mbfile_read(
 
 	return MBFILE_READ_OK;
 }
+
+extern enum mbstatus_e mbfile_write_allowed(
+	const struct mbfile_desc_s *file,
+	uint16_t record_no,
+	uint16_t record_length,
+	const uint8_t *val)
+{
+	const struct mbreg_desc_s *reg;
+	uint16_t addr, reg_offs;
+	size_t n_regs_written;
+
+	for (reg_offs=0u; reg_offs<record_length; ) {
+		addr = record_no + reg_offs;
+		if ((reg = mbreg_find_desc(file->records, file->n_records, addr)) == NULL) {
+			return MB_ILLEGAL_DATA_ADDR;
+		}
+
+		n_regs_written = mbreg_write_allowed(
+			reg,
+			addr,
+			record_no,
+			record_length-reg_offs,
+			val + (reg_offs*2u));
+		if (n_regs_written == 0u) {
+			return MB_ILLEGAL_DATA_ADDR;
+		}
+
+		/* Advance by the actual written register size to handle
+		   sub-registers correctly */
+		reg_offs += (uint16_t)n_regs_written;
+	}
+
+	return MB_OK;
+}
+
+extern enum mbstatus_e mbfile_write(
+	const struct mbfile_desc_s *file,
+	uint16_t record_no,
+	uint16_t record_length,
+	const uint8_t *val)
+{
+	const struct mbreg_desc_s *reg;
+	enum mbstatus_e status;
+	uint16_t addr, reg_offs;
+	size_t n_regs_written;
+
+	for (reg_offs=0u; reg_offs<record_length; ) {
+		addr = record_no + reg_offs;
+		reg = mbreg_find_desc(file->records, file->n_records, addr);
+
+		status = mbreg_write(
+			reg,
+			addr,
+			record_length-reg_offs,
+			val + (reg_offs*2u),
+			&n_regs_written);
+		if (status!=MB_OK) return status;
+		if (n_regs_written==0u) return MB_DEV_FAIL;
+
+		if (reg->post_write_cb!=NULL) {
+			reg->post_write_cb();
+		}
+
+		/* Advance by the actual written register size to handle
+		   sub-registers correctly */
+		reg_offs += (uint16_t)n_regs_written;
+	}
+
+	return MB_OK;
+}

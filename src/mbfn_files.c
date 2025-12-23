@@ -41,8 +41,10 @@
 #include "mbfn_files.h"
 #include "endian.h"
 #include "mbfile.h"
+#include "mbpdu.h"
 #include <stddef.h>
 #include <stdint.h>
+#include <string.h>
 
 enum {
 	/**
@@ -84,6 +86,32 @@ enum {
 	READ_RESP_HEADER_SIZE=2u,
 	READ_SUB_RESP_HEADER_SIZE=2u,
 	READ_RESP_MAX_BYTE_COUNT=0xF5,
+};
+
+enum {
+	/**
+	 * Function code (1 byte)
+	 * Byte count (1 byte)
+	 */
+	WRITE_REQ_HEADER_SIZE=2u,
+
+	/**
+	 * Reference type (1 byte)
+	 * File number (2 bytes)
+	 * Record number (2 bytes)
+	 * Record length (2 bytes)
+	 */
+	WRITE_SUB_REQ_HEADER_SIZE=7u,
+
+	/**
+	 * Header (7 byte)
+	 * Record data (>= 2 bytes)
+	 */
+	WRITE_SUB_REQ_MIN_SIZE=WRITE_SUB_REQ_HEADER_SIZE + 2u,
+
+	WRITE_REQ_MIN_SIZE = WRITE_REQ_HEADER_SIZE + WRITE_SUB_REQ_MIN_SIZE,
+
+	WRITE_REQ_MAX_BYTE_COUNT = MBPDU_DATA_SIZE_MAX - WRITE_REQ_HEADER_SIZE,
 };
 
 enum {REF_TYPE=0x06u};
@@ -187,15 +215,114 @@ extern enum mbstatus_e mbfn_file_write(
 	size_t req_len,
 	struct mbpdu_buf_s *res)
 {
-	(void)req_len;
+	size_t i;
+	uint8_t byte_count;
+	size_t remaining_bytes;
+	const uint8_t *p;
+	uint16_t file_no, record_no, record_length;
+	const struct mbfile_desc_s *file;
+	enum mbstatus_e status;
 
 	if ((inst==NULL) || (req==NULL) || (res==NULL)) return MB_DEV_FAIL;
 	if (req[0]!=MBFC_WRITE_FILE_RECORD) return MB_DEV_FAIL;
 
-	/* TODO */
+	if (req_len < WRITE_REQ_MIN_SIZE) {
+		return MB_ILLEGAL_DATA_VAL;
+	}
 
-	res->p[0] = MBFC_WRITE_FILE_RECORD;
-	res->size = 1u;
+	byte_count = req[1];
+
+	if ((byte_count < WRITE_SUB_REQ_MIN_SIZE)
+			|| (byte_count > WRITE_REQ_MAX_BYTE_COUNT)
+			|| (byte_count != (req_len-WRITE_REQ_HEADER_SIZE))) {
+		return MB_ILLEGAL_DATA_VAL;
+	}
+
+	/* Validate request and ensure all registers in all files can be written
+	   to before writing anything. */
+	p = req + WRITE_REQ_HEADER_SIZE;
+	i=0u;
+	while ((i++ < 1000u) && ((p - (req + WRITE_REQ_HEADER_SIZE)) < byte_count)) {
+		remaining_bytes = byte_count - (p - (req + WRITE_REQ_HEADER_SIZE));
+		if (remaining_bytes < WRITE_SUB_REQ_MIN_SIZE) {
+			return MB_ILLEGAL_DATA_VAL;
+		}
+		if (p[0] != REF_TYPE) {
+			return MB_ILLEGAL_DATA_VAL;
+		}
+
+		file_no = betou16(p+1u);
+		record_no = betou16(p+3u);
+		record_length = betou16(p+5u);
+		p += WRITE_SUB_REQ_HEADER_SIZE;
+
+		if (file_no==0u) { /* Range: (0x0000,0xFFFF] */
+			return MB_ILLEGAL_DATA_ADDR;
+		}
+		if (!inst->allow_ext_file_recs
+				&& (record_no>MAX_REC_NO)) { /* Range: [0,0x270F] */
+			return MB_ILLEGAL_DATA_ADDR;
+		}
+		if ((record_length==0u)
+				|| ((record_length*2u) > (remaining_bytes-WRITE_SUB_REQ_HEADER_SIZE))) {
+			return MB_ILLEGAL_DATA_VAL;
+		}
+
+		file = mbfile_find(inst->files, inst->n_files, file_no);
+		if (file==NULL) {
+			return MB_ILLEGAL_DATA_ADDR;
+		}
+
+		status = mbfile_write_allowed(file, record_no, record_length, p);
+		if (status != MB_OK) {
+			return status;
+		}
+
+		p += record_length * 2u;
+	}
+	if (i==1000u) {
+		return MB_DEV_FAIL;
+	}
+
+	res->p[1] = byte_count;
+	res->size = 2u;
+
+	/* Write the actual data */
+	p = req + WRITE_REQ_HEADER_SIZE;
+	i=0u;
+	while ((i++ < 1000u) && ((p - (req + WRITE_REQ_HEADER_SIZE)) < byte_count)) {
+		remaining_bytes = byte_count - (p - (req + WRITE_REQ_HEADER_SIZE));
+
+		file_no = betou16(p + 1u);
+		record_no = betou16(p + 3u);
+		record_length = betou16(p + 5u);
+		p += WRITE_SUB_REQ_HEADER_SIZE;
+
+		file = mbfile_find(inst->files, inst->n_files, file_no);
+		status = mbfile_write(file, record_no, record_length, p);
+		if (status != MB_OK) { /* Request might me incomplete, not ideal... */
+			return status;
+		}
+
+		/* Build response */
+		res->p[res->size] = REF_TYPE;
+		u16tobe(file_no, res->p + res->size+1u);
+		u16tobe(record_no, res->p + res->size+3u);
+		u16tobe(record_length, res->p + res->size+5u);
+		res->size += WRITE_SUB_REQ_HEADER_SIZE;
+
+		memcpy(res->p + res->size, p, record_length * 2u);
+		res->size += record_length * 2u;
+
+		p += record_length * 2u;
+	}
+	if (i==1000u) {
+		return MB_DEV_FAIL;
+	}
+
+	if (inst->commit_regs_write_cb!=NULL) {
+		inst->commit_regs_write_cb(inst);
+	}
 
 	return MB_OK;
 }

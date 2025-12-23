@@ -133,4 +133,41 @@ extern enum mbfile_read_status_e mbfile_read(
 	uint16_t record_length,
 	struct mbpdu_buf_s *res);
 
+/**
+ * @brief Validate whether a file record write operation is allowed
+ *
+ * Checks if the specified file record write operation can be performed.
+ * This function performs validation without actually writing data, making it
+ * useful for pre-validation in multi-step write operations that require atomicity.
+ *
+ * @param file Pointer to the file descriptor containing the target record
+ * @param record_no Starting record number within the file (0-based index)
+ * @param record_length Number of 16-bit registers to write to the record
+ * @param val Pointer to the data values to be written (for validation purposes)
+ */
+extern enum mbstatus_e mbfile_write_allowed(
+	const struct mbfile_desc_s *file,
+	uint16_t record_no,
+	uint16_t record_length,
+	const uint8_t *val);
+
+/**
+ * @brief Write data to a file record
+ *
+ * Writes register data to the specified record within a file descriptor.
+ * Handles multi-register writes and data type conversions as needed.
+ *
+ * @param file Pointer to the file descriptor containing the target record
+ * @param record_no Starting record number within the file (0-based index)
+ * @param record_length Number of 16-bit registers to write to the record
+ * @param val Pointer to the data values to write (in big endian)
+ *
+ * @note Calls post_write_cb callbacks if defined on the target registers
+ */
+extern enum mbstatus_e mbfile_write(
+	const struct mbfile_desc_s *file,
+	uint16_t record_no,
+	uint16_t record_length,
+	const uint8_t *val);
+
 #endif /* MBFILE_H_INCLUDED */
