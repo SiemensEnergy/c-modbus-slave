@@ -34,6 +34,7 @@
  */
 
 #include "endian.h"
+#include <string.h>
 
 extern uint16_t betou16(const uint8_t *buf)
 {
@@ -81,14 +82,18 @@ extern int64_t betoi64(const uint8_t *buf)
 
 extern float betof32(const uint8_t *buf)
 {
-	uint32_t tmp = betou32(buf);
-	return *(float *)&tmp;
+	uint32_t u32 = betou32(buf);
+	float f;
+	memcpy(&f, &u32, sizeof f);
+	return f;
 }
 
 extern double betof64(const uint8_t *buf)
 {
-	uint64_t tmp = betou64(buf);
-	return *(double *)&tmp;
+	uint64_t u64 = betou64(buf);
+	double f;
+	memcpy(&f, &u64, sizeof f);
+	return f;
 }
 
 extern uint16_t letou16(const uint8_t *buf)
@@ -136,14 +141,18 @@ extern int64_t letoi64(const uint8_t *buf)
 
 extern float letof32(const uint8_t *buf)
 {
-	uint32_t tmp = letou32(buf);
-	return *(float *)&tmp;
+	uint32_t u32 = letou32(buf);
+	float f;
+	memcpy(&f, &u32, sizeof f);
+	return f;
 }
 
 extern double letof64(const uint8_t *buf)
 {
-	uint64_t tmp = letou64(buf);
-	return *(double *)&tmp;
+	uint64_t u64 = letou64(buf);
+	double f;
+	memcpy(&f, &u64, sizeof f);
+	return f;
 }
 
 extern void u16tobe(uint16_t val, uint8_t *dst)
