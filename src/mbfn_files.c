@@ -59,14 +59,14 @@ enum {
 	 */
 	READ_SUB_REQ_SIZE=7u,
 
-	MIN_READ_REQ_SIZE = READ_REQ_HEADER_SIZE + READ_SUB_REQ_SIZE,
+	READ_REQ_MIN_SIZE = READ_REQ_HEADER_SIZE + READ_SUB_REQ_SIZE,
 
 	/**
 	 * (MBPDU_DATA_SIZE_MAX - READ_REQ_HEADER_SIZE) - ((MBPDU_DATA_SIZE_MAX - READ_REQ_HEADER_SIZE) % SUB_REQ_SIZE)
 	 *
 	 * (252 - 2) - ((252 - 2) % 7)
 	 */
-	MAX_READ_REQ_BYTE_COUNT=0xF5,
+	READ_REQ_MAX_BYTE_COUNT=0xF5,
 };
 
 enum {
@@ -76,18 +76,18 @@ enum {
 	READ_SUB_REQ_REC_LEN_POS=5u,
 };
 
-enum {REF_TYPE=0x06u};
-enum {MAX_REC_NO=0x270Fu};
-
 enum {
 	/**
 	 * Function code (1 byte)
 	 * Byte count (1 byte)
 	 */
-	RESP_HEADER_SIZE=2u,
-	SUB_RESP_HEADER_SIZE=2u,
-	MAX_RESP_BYTE_COUNT=0xF5,
+	READ_RESP_HEADER_SIZE=2u,
+	READ_SUB_RESP_HEADER_SIZE=2u,
+	READ_RESP_MAX_BYTE_COUNT=0xF5,
 };
+
+enum {REF_TYPE=0x06u};
+enum {MAX_REC_NO=0x270Fu};
 
 extern enum mbstatus_e mbfn_file_read(
 	const struct mbinst_s *inst,
@@ -105,14 +105,14 @@ extern enum mbstatus_e mbfn_file_read(
 	if ((inst==NULL) || (req==NULL) || (res==NULL)) return MB_DEV_FAIL;
 	if (req[0]!=MBFC_READ_FILE_RECORD) return MB_DEV_FAIL;
 
-	if (req_len < MIN_READ_REQ_SIZE) {
+	if (req_len < READ_REQ_MIN_SIZE) {
 		return MB_ILLEGAL_DATA_VAL;
 	}
 
 	byte_count = req[1];
 
 	if ((byte_count < READ_SUB_REQ_SIZE)
-			|| (byte_count > MAX_READ_REQ_BYTE_COUNT)
+			|| (byte_count > READ_REQ_MAX_BYTE_COUNT)
 			|| (byte_count != (req_len-READ_REQ_HEADER_SIZE))
 			|| ((byte_count % READ_SUB_REQ_SIZE) != 0)) {
 		return MB_ILLEGAL_DATA_VAL;
@@ -144,10 +144,10 @@ extern enum mbstatus_e mbfn_file_read(
 			return MB_ILLEGAL_DATA_VAL;
 		}
 
-		resp_byte_count += SUB_RESP_HEADER_SIZE + (record_length * 2u);
+		resp_byte_count += READ_SUB_RESP_HEADER_SIZE + (record_length * 2u);
 	}
 
-	if (resp_byte_count > MAX_RESP_BYTE_COUNT) {
+	if (resp_byte_count > READ_RESP_MAX_BYTE_COUNT) {
 		return MB_ILLEGAL_DATA_VAL;
 	}
 
