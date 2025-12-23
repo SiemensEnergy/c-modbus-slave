@@ -42,6 +42,7 @@
 
 #include "mbdef.h"
 #include "mbcoil.h"
+#include "mbfile.h"
 #include "mbpdu.h"
 #include "mbreg.h"
 #include <stddef.h>
@@ -113,6 +114,22 @@ struct mbinst_s {
 	size_t n_hold_regs; /**< Number of holding register descriptors */
 
 	/**
+	 * @brief File record descriptor map (Read/write file record access)
+	 *
+	 * Maps Modbus file numbers to register record structures for file-based data access.
+	 * File records provide an alternative method for organizing register data into logical
+	 * file-like structures, allowing for more complex data organization and access patterns.
+	 * Accessed via function codes 0x14 (Read File Record) and 0x15 (Write File Record).
+	 *
+	 * @note Can be left as NULL if file record functionality is not needed
+	 * @note Must be sorted in ascending file number order for binary search
+	 * @note Each file descriptor contains its own register mapping and access control
+	 * @note File records provide an extension to standard register access for complex data structures
+	 */
+	const struct mbfile_desc_s *files;
+	size_t n_files; /**< Number of file descriptors */
+
+	/**
 	 * @brief Custom function handler for unsupported or missing function codes
 	 *
 	 * Called when a Modbus function code is not handled by the standard handlers
@@ -169,6 +186,15 @@ struct mbinst_s {
 	 * @note Not called if any register write operation fails
 	 */
 	void (*commit_regs_write_cb)(const struct mbinst_s *inst);
+
+	/**
+	 * @brief Allow extended file record numbers
+	 *
+	 * Remove limit of 10'000 file records.
+	 *
+	 * @note Value is a u16
+	 */
+	int allow_ext_file_recs;
 
 	/**
 	 * @brief Serial specific configuration

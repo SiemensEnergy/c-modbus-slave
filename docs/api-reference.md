@@ -64,8 +64,8 @@ For additional information, see [Modbus Application Protocol](https://www.modbus
 | **X** | 0x0F  | **MBFC_WRITE_MULTIPLE_COILS**  | Write multiple coils             |               |
 | **X** | 0x10  | **MBFC_WRITE_MULTIPLE_REGS**   | Write multiple holding registers |               |
 |       | 0x11  | **MBFC_REPORT_SLAVE_ID**       | Report slave identification      | _Serial only_ |
-|       | 0x14  | **MBFC_READ_FILE_RECORD**      | Read file record                 |               |
-|       | 0x15  | **MBFC_WRITE_FILE_RECORD**     | Write file record                |               |
+| **X** | 0x14  | **MBFC_READ_FILE_RECORD**      | Read file record                 |               |
+| **X** | 0x15  | **MBFC_WRITE_FILE_RECORD**     | Write file record                |               |
 | **X** | 0x16  | **MBFC_MASK_WRITE_REG**        | Mask Write Register              |               |
 | **X** | 0x17  | **MBFC_READ_WRITE_REGS**       | Read/Write multiple registers    |               |
 |       | 0x18  | **MBFC_READ_FIFO_QUEUE**       | Read FIFO queue                  |               |
@@ -76,15 +76,15 @@ Enum `enum mbstatus_e` can be found in `mbdef.h`.
 
 | Value | Enum                     | Description                                                                         |
 | ----- | ------------------------ | ----------------------------------------------------------------------------------- |
-| 0x0   | **MB_OK**                | No error                                                                            |
-| 0x1   | **MB_ILLEGAL_FN**        | Function code received in the query is not recognized or allowed                    |
-| 0x2   | **MB_ILLEGAL_DATA_ADDR** | Data address of some or all the required entities are not allowed or do not exist   |
-| 0x3   | **MB_ILLEGAL_DATA_VAL**  | Illegal data value. Value is not accepted                                           |
-| 0x4   | **MB_DEV_FAIL**          | Unrecoverable error occurred while slave was attempting to perform requested action |
-| 0x5   | **MB_ACK**               |                                                                                     |
-| 0x6   | **MB_BUSY**              | Slave is engaged in processing a long-duration command; client should retry later   |
-| 0x7   | **MB_NEG_ACK**           |                                                                                     |
-| 0x8   | **MB_MEM_PAR_ERR**       | Slave detected a parity error in memory; master can retry the request               |
+| 0x00  | **MB_OK**                | No error                                                                            |
+| 0x01  | **MB_ILLEGAL_FN**        | Function code received in the query is not recognized or allowed                    |
+| 0x02  | **MB_ILLEGAL_DATA_ADDR** | Data address of some or all the required entities are not allowed or do not exist   |
+| 0x03  | **MB_ILLEGAL_DATA_VAL**  | Illegal data value. Value is not accepted                                           |
+| 0x04  | **MB_DEV_FAIL**          | Unrecoverable error occurred while slave was attempting to perform requested action |
+| 0x05  | **MB_ACK**               |                                                                                     |
+| 0x06  | **MB_BUSY**              | Slave is engaged in processing a long-duration command; client should retry later   |
+| 0x07  | **MB_NEG_ACK**           |                                                                                     |
+| 0x08  | **MB_MEM_PAR_ERR**       | Slave detected a parity error in memory; master can retry the request               |
 
 ## Data Types
 

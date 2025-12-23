@@ -72,7 +72,7 @@ static enum mbstatus_e read_regs(
 	}
 
 	/* If we read multiple registers and one of them doesn't exist,
-	   we just fill that with some "random" data.
+	   we just fill that with zero.
 	   We don't want to do this if the first register is missing.
 	 */
 	if (!mbreg_find_desc(regs, n_regs, start_addr)) {

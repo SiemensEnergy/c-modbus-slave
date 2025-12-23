@@ -11,8 +11,10 @@ LIB_SRC := \
 	mbadu.c \
 	mbcoil.c \
 	mbcrc.c \
+	mbfile.c \
 	mbfn_coils.c \
 	mbfn_digs.c \
+	mbfn_files.c \
 	mbfn_regs.c \
 	mbfn_serial.c \
 	mbinst.c \
