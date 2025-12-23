@@ -284,6 +284,8 @@ extern enum mbstatus_e mbfn_file_write(
 		return MB_DEV_FAIL;
 	}
 
+	status = MB_OK;
+
 	res->p[1] = byte_count;
 	res->size = 2u;
 
@@ -291,8 +293,6 @@ extern enum mbstatus_e mbfn_file_write(
 	p = req + WRITE_REQ_HEADER_SIZE;
 	i=0u;
 	while ((i++ < 1000u) && ((p - (req + WRITE_REQ_HEADER_SIZE)) < byte_count)) {
-		remaining_bytes = byte_count - (p - (req + WRITE_REQ_HEADER_SIZE));
-
 		file_no = betou16(p + 1u);
 		record_no = betou16(p + 3u);
 		record_length = betou16(p + 5u);
@@ -300,9 +300,6 @@ extern enum mbstatus_e mbfn_file_write(
 
 		file = mbfile_find(inst->files, inst->n_files, file_no);
 		status = mbfile_write(file, record_no, record_length, p);
-		if (status != MB_OK) { /* Request might me incomplete, not ideal... */
-			return status;
-		}
 
 		/* Build response */
 		res->p[res->size] = REF_TYPE;
@@ -324,5 +321,5 @@ extern enum mbstatus_e mbfn_file_write(
 		inst->commit_regs_write_cb(inst);
 	}
 
-	return MB_OK;
+	return status;
 }
