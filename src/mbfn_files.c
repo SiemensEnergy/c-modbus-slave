@@ -174,7 +174,7 @@ extern enum mbstatus_e mbfn_file_read(
 		record_length = betou16(p + READ_SUB_REQ_REC_LEN_POS);
 
 		if (file_no==0u) { /* Range: (0x0000,0xFFFF] */
-			return MB_ILLEGAL_DATA_VAL;
+			return MB_ILLEGAL_DATA_ADDR;
 		}
 		if (!inst->allow_ext_file_recs
 				&& (record_no>MAX_REC_NO)) { /* Range: [0,0x270F] */
