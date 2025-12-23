@@ -110,6 +110,11 @@ extern int mbcoil_write_allowed(const struct mbcoil_desc_s *coil)
 {
 	if (!coil) return 0;
 
+	/* Check if write is allowed */
+	if (!(coil->access & MCACC_W_MASK)) {
+		return 0;
+	}
+
 	/* Check write permissions */
 	if (coil->wlock_cb && coil->wlock_cb()) {
 		return 0;
