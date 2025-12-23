@@ -89,6 +89,11 @@ enum {
 };
 
 enum {
+	READ_SUB_RESP_LEN_POS=0u,
+	READ_SUB_RESP_REF_TYPE_POS=1u,
+};
+
+enum {
 	/**
 	 * Function code (1 byte)
 	 * Byte count (1 byte)
@@ -112,6 +117,13 @@ enum {
 	WRITE_REQ_MIN_SIZE = WRITE_REQ_HEADER_SIZE + WRITE_SUB_REQ_MIN_SIZE,
 
 	WRITE_REQ_MAX_BYTE_COUNT = MBPDU_DATA_SIZE_MAX - WRITE_REQ_HEADER_SIZE,
+};
+
+enum {
+	WRITE_SUB_REQ_REF_TYPE_POS=0u,
+	WRITE_SUB_REQ_FILE_NO_POS=1u,
+	WRITE_SUB_REQ_REC_NO_POS=3u,
+	WRITE_SUB_REQ_REC_LEN_POS=5u,
 };
 
 enum {REF_TYPE=0x06u};
@@ -194,9 +206,9 @@ extern enum mbstatus_e mbfn_file_read(
 			return MB_ILLEGAL_DATA_ADDR;
 		}
 
-		res->p[res->size] = 1u + (record_length * 2u); /* File resp. length */
-		res->p[res->size+1u] = REF_TYPE;
-		res->size += 2u;
+		res->p[res->size + READ_SUB_RESP_LEN_POS] = 1u + (record_length * 2u); /* File resp. length */
+		res->p[res->size + READ_SUB_RESP_REF_TYPE_POS] = REF_TYPE;
+		res->size += READ_SUB_RESP_HEADER_SIZE;
 
 		switch (mbfile_read(file, record_no, record_length, res)) {
 		case MBFILE_READ_OK: break;
@@ -247,13 +259,13 @@ extern enum mbstatus_e mbfn_file_write(
 		if (remaining_bytes < WRITE_SUB_REQ_MIN_SIZE) {
 			return MB_ILLEGAL_DATA_VAL;
 		}
-		if (p[0] != REF_TYPE) {
+		if (p[WRITE_SUB_REQ_REF_TYPE_POS] != REF_TYPE) {
 			return MB_ILLEGAL_DATA_VAL;
 		}
 
-		file_no = betou16(p+1u);
-		record_no = betou16(p+3u);
-		record_length = betou16(p+5u);
+		file_no = betou16(p + WRITE_SUB_REQ_FILE_NO_POS);
+		record_no = betou16(p + WRITE_SUB_REQ_REC_NO_POS);
+		record_length = betou16(p + WRITE_SUB_REQ_REC_LEN_POS);
 		p += WRITE_SUB_REQ_HEADER_SIZE;
 
 		if (file_no==0u) { /* Range: (0x0000,0xFFFF] */
@@ -291,9 +303,9 @@ extern enum mbstatus_e mbfn_file_write(
 	p = req + WRITE_REQ_HEADER_SIZE;
 	i=0u;
 	while ((i++ < 1000u) && ((p - (req + WRITE_REQ_HEADER_SIZE)) < byte_count)) {
-		file_no = betou16(p + 1u);
-		record_no = betou16(p + 3u);
-		record_length = betou16(p + 5u);
+		file_no = betou16(p + WRITE_SUB_REQ_FILE_NO_POS);
+		record_no = betou16(p + WRITE_SUB_REQ_REC_NO_POS);
+		record_length = betou16(p + WRITE_SUB_REQ_REC_LEN_POS);
 		p += WRITE_SUB_REQ_HEADER_SIZE;
 
 		file = mbfile_find(inst->files, inst->n_files, file_no);
@@ -303,10 +315,10 @@ extern enum mbstatus_e mbfn_file_write(
 		}
 
 		/* Build response */
-		res->p[res->size] = REF_TYPE;
-		u16tobe(file_no, res->p + res->size+1u);
-		u16tobe(record_no, res->p + res->size+3u);
-		u16tobe(record_length, res->p + res->size+5u);
+		res->p[res->size + WRITE_SUB_REQ_REF_TYPE_POS] = REF_TYPE;
+		u16tobe(file_no, res->p + res->size + WRITE_SUB_REQ_FILE_NO_POS);
+		u16tobe(record_no, res->p + res->size + WRITE_SUB_REQ_REC_NO_POS);
+		u16tobe(record_length, res->p + res->size + WRITE_SUB_REQ_REC_LEN_POS);
 		res->size += WRITE_SUB_REQ_HEADER_SIZE;
 
 		memcpy(res->p + res->size, p, record_length * 2u);
