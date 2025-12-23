@@ -12,6 +12,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added file record descriptors and supporting functions
 - Handle function code 0x14 and 0x15 for file record access
 
+### Fixed
+
+- Validate protocol length in mbadu_tcp
+
 ## [1.4.0] - 2025-11-09
 
 ### Added
