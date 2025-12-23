@@ -425,3 +425,25 @@ extern int mbtest_regs_validate_all(
 
 	return 1;
 }
+
+extern int mbtest_files_asc_and_unique(
+	const struct mbfile_desc_s *files,
+	size_t n_files,
+	uint16_t *issue_file_no)
+{
+	size_t i;
+	uint16_t file_no, prev_file_no;
+
+	prev_file_no = files[0].file_no;
+
+	for (i=1u; i<n_files; ++i) {
+		file_no = files[i].file_no;
+		if (file_no <= prev_file_no) {
+			if (issue_file_no) *issue_file_no = file_no;
+			return 0;
+		}
+		prev_file_no = file_no;
+	}
+
+	return 1;
+}
