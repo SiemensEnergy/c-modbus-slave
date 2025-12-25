@@ -28,12 +28,8 @@ DEP_FILES := ${OBJ:.o=.d}
 
 CFLAGS := \
 	-std=c11 \
-	-Wall -Wextra -Wmissing-include-dirs \
-	-Wswitch-default -Wpedantic \
-	-Wno-pointer-to-int-cast -Wno-int-to-pointer-cast
-
-# Generate dependency information
-CFLAGS += -MP -MMD
+	-Wall -Wextra -Wpedantic \
+	-MP -MMD
 
 .PHONY: all test clean analyze
 
