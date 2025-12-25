@@ -80,7 +80,7 @@ extern float betof32(const uint8_t *buf)
 {
 	float f;
 	uint32_t u32 = betou32(buf);
-	memcpy(&f, &u32, sizeof f);
+	(void)memcpy(&f, &u32, sizeof f);
 	return f;
 }
 
@@ -88,7 +88,7 @@ extern double betof64(const uint8_t *buf)
 {
 	double f;
 	uint64_t u64 = betou64(buf);
-	memcpy(&f, &u64, sizeof f);
+	(void)memcpy(&f, &u64, sizeof f);
 	return f;
 }
 
@@ -140,7 +140,7 @@ extern float letof32(const uint8_t *buf)
 {
 	float f;
 	uint32_t u32 = letou32(buf);
-	memcpy(&f, &u32, sizeof f);
+	(void)memcpy(&f, &u32, sizeof f);
 	return f;
 }
 
@@ -148,7 +148,7 @@ extern double letof64(const uint8_t *buf)
 {
 	double f;
 	uint64_t u64 = letou64(buf);
-	memcpy(&f, &u64, sizeof f);
+	(void)memcpy(&f, &u64, sizeof f);
 	return f;
 }
 
@@ -196,14 +196,14 @@ extern void i64tobe(int64_t val, uint8_t *dst)
 extern void f32tobe(float val, uint8_t *dst)
 {
 	uint32_t u32;
-	memcpy(&u32, &val, sizeof u32);
+	(void)memcpy(&u32, &val, sizeof u32);
 	u32tobe(u32, dst);
 }
 
 extern void f64tobe(double val, uint8_t *dst)
 {
 	uint64_t u64;
-	memcpy(&u64, &val, sizeof u64);
+	(void)memcpy(&u64, &val, sizeof u64);
 	u64tobe(u64, dst);
 }
 
@@ -251,13 +251,13 @@ extern void i64tole(int64_t val, uint8_t *dst)
 extern void f32tole(float val, uint8_t *dst)
 {
 	uint32_t u32;
-	memcpy(&u32, &val, sizeof u32);
+	(void)memcpy(&u32, &val, sizeof u32);
 	u32tole(u32, dst);
 }
 
 extern void f64tole(double val, uint8_t *dst)
 {
 	uint64_t u64;
-	memcpy(&u64, &val, sizeof u64);
+	(void)memcpy(&u64, &val, sizeof u64);
 	u64tole(u64, dst);
 }
