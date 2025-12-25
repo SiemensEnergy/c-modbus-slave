@@ -145,7 +145,9 @@ extern const struct mbreg_desc_s *mbreg_find_desc(
 			} else if (reg->address < addr) {
 				l = m + 1u;
 			} else {
-				if (m == 0u) break; /* Prevent underflow */
+				if (m == 0u) { /* Prevent underflow */
+					break;
+				}
 				r = m - 1u;
 			}
 		}

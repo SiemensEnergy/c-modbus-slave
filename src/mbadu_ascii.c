@@ -131,7 +131,7 @@ extern size_t mbadu_ascii_handle_req(
 	if ((req[0] != MBADU_ASCII_START_CHAR)
 			|| (req[req_len-2u] != (uint8_t)'\r')
 			|| (req[req_len-1u] != inst->state.ascii_delimiter)
-			|| ((req_len-1u)%2u != 0u)) {
+			|| (((req_len-1u)%2u) != 0u)) {
 		if (recv_event!=0u) {mb_add_comm_event(inst, MB_COMM_EVENT_IS_RECV | recv_event);}
 		return 0u;
 	}

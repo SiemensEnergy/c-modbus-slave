@@ -318,7 +318,7 @@ extern enum mbstatus_e mbfn_file_write(
 		u16tobe(record_length, res->p + res->size + WRITE_SUB_REQ_REC_LEN_POS);
 		res->size += WRITE_SUB_REQ_HEADER_SIZE;
 
-		memcpy(res->p + res->size, p, record_length * 2u);
+		(void)memcpy(res->p + res->size, p, record_length * 2u);
 		res->size += record_length * 2u;
 
 		p += record_length * 2u;

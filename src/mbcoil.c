@@ -63,7 +63,9 @@ extern const struct mbcoil_desc_s *mbcoil_find_desc(
 			if (coil->address < addr) {
 				l = m + 1u;
 			} else if (coil->address > addr) {
-				if (m == 0u) break; /* Prevent underflow */
+				if (m == 0u) { /* Prevent underflow */
+					break;
+				}
 				r = m - 1u;
 			} else {
 				return coil;

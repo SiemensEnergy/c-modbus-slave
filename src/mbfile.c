@@ -73,7 +73,9 @@ extern const struct mbfile_desc_s *mbfile_find(
 			} else if (file->file_no < file_no) {
 				l = m + 1u;
 			} else {
-				if (m == 0u) break; /* Prevent underflow */
+				if (m == 0u) { /* Prevent underflow */
+					break;
+				}
 				r = m - 1u;
 			}
 		}
