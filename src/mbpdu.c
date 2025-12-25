@@ -174,7 +174,7 @@ extern size_t mbpdu_handle_req(
 	if (status!=MB_OK) {
 		/* Prepare exception response */
 		res[0] |= MB_ERR_FLG;
-		res[1] = status;
+		res[1] = (uint8_t)status;
 		res_pdu.size = 2u;
 
 		/* Set send communication event flags */

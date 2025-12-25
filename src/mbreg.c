@@ -606,7 +606,7 @@ static enum mbstatus_e write_block_partial(
 	reg_size = mbreg_size(reg);
 	reg_size_w = reg_size / 2u;
 	ix = (addr - reg->address) / reg_size_w;
-	start_addr = reg->address + ix * reg_size_w;
+	start_addr = reg->address + (uint16_t)(ix * reg_size_w);
 
 	if (((addr - start_addr)*2u) >= reg_size) {
 		return MB_DEV_FAIL;

@@ -34,8 +34,8 @@
 
 extern uint16_t betou16(const uint8_t *buf)
 {
-	return ((uint16_t)buf[0] << 8)
-		| ((uint16_t)buf[1]);
+	return (uint16_t)(((uint16_t)buf[0] << 8)
+		| ((uint16_t)buf[1]));
 }
 
 extern uint32_t betou32(const uint8_t *buf)
@@ -94,27 +94,28 @@ extern double betof64(const uint8_t *buf)
 
 extern uint16_t letou16(const uint8_t *buf)
 {
-	return (uint16_t)buf[0] | (uint16_t)buf[1] << 8;
+	return (uint16_t)(((uint16_t)buf[0])
+		| ((uint16_t)buf[1] << 8));
 }
 
 extern uint32_t letou32(const uint8_t *buf)
 {
-	return (uint32_t)buf[0]
-		| (uint32_t)buf[1] << 8
-		| (uint32_t)buf[2] << 16
-		| (uint32_t)buf[3] << 24;
+	return ((uint32_t)buf[0])
+		| ((uint32_t)buf[1] << 8)
+		| ((uint32_t)buf[2] << 16)
+		| ((uint32_t)buf[3] << 24);
 }
 
 extern uint64_t letou64(const uint8_t *buf)
 {
-	return (uint64_t)buf[0]
-		| (uint64_t)buf[1] << 8
-		| (uint64_t)buf[2] << 16
-		| (uint64_t)buf[3] << 24
-		| (uint64_t)buf[4] << 32
-		| (uint64_t)buf[5] << 40
-		| (uint64_t)buf[6] << 48
-		| (uint64_t)buf[7] << 56;
+	return ((uint64_t)buf[0])
+		| ((uint64_t)buf[1] << 8)
+		| ((uint64_t)buf[2] << 16)
+		| ((uint64_t)buf[3] << 24)
+		| ((uint64_t)buf[4] << 32)
+		| ((uint64_t)buf[5] << 40)
+		| ((uint64_t)buf[6] << 48)
+		| ((uint64_t)buf[7] << 56);
 }
 
 extern int16_t letoi16(const uint8_t *buf)

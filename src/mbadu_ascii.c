@@ -60,17 +60,18 @@ static int xtoi(int c)
 static void u8tox(uint8_t v, uint8_t *out)
 {
 	const char *hex_digits = "0123456789ABCDEF";
-	out[0] = hex_digits[(v >> 4) & 0x0Fu];
-	out[1] = hex_digits[v & 0x0Fu];
+	out[0] = (uint8_t)hex_digits[(v >> 4) & 0x0Fu];
+	out[1] = (uint8_t)hex_digits[v & 0x0Fu];
 }
 
-static uint8_t calc_lrc(const uint8_t *data, int len)
+static uint8_t calc_lrc(const uint8_t *data, size_t len)
 {
-	int i, sum;
+	size_t i;
+	int sum;
 
 	/* Calculate sum of all bytes */
 	sum = 0;
-	for (i=0; i<len; ++i) {
+	for (i=0u; i<len; ++i) {
 		sum += (int)data[i];
 	}
 

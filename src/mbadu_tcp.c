@@ -88,7 +88,7 @@ extern size_t mbadu_tcp_handle_req(
 	/* Build response MBAP */
 	u16tobe(transaction_id, res + MBAP_POS_TRANS_ID);
 	u16tobe(protocol_id, res + MBAP_POS_PROT_ID);
-	u16tobe(1u+pdu_size, res + MBAP_POS_LEN);
+	u16tobe((uint16_t)(1u+pdu_size), res + MBAP_POS_LEN);
 	res[MBAP_POS_UNIT_ID] = unit_id;
 
 	return MBAP_SIZE + pdu_size;

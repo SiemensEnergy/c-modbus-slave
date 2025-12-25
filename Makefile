@@ -28,7 +28,9 @@ DEP_FILES := ${OBJ:.o=.d}
 
 CFLAGS := \
 	-std=c11 \
-	-Wall -Wextra -Wpedantic \
+	-Wall -Wextra -Wpedantic -Werror \
+	-Wconversion -Wsign-conversion \
+	-Wshadow \
 	-MP -MMD
 
 .PHONY: all test clean analyze

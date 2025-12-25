@@ -191,7 +191,7 @@ extern enum mbstatus_e mbfn_file_read(
 		return MB_ILLEGAL_DATA_VAL;
 	}
 
-	res->p[1] = resp_byte_count;
+	res->p[1] = (uint8_t)resp_byte_count;
 	res->size = 2u;
 
 	for (i=0u; i<n_sub_reqs; ++i) {
@@ -206,7 +206,7 @@ extern enum mbstatus_e mbfn_file_read(
 			return MB_ILLEGAL_DATA_ADDR;
 		}
 
-		res->p[res->size + READ_SUB_RESP_LEN_POS] = 1u + (record_length * 2u); /* File resp. length */
+		res->p[res->size + READ_SUB_RESP_LEN_POS] = (uint8_t)(1u + (record_length * 2u)); /* File resp. length */
 		res->p[res->size + READ_SUB_RESP_REF_TYPE_POS] = REF_TYPE;
 		res->size += READ_SUB_RESP_HEADER_SIZE;
 
@@ -254,7 +254,7 @@ extern enum mbstatus_e mbfn_file_write(
 	base = req + WRITE_REQ_HEADER_SIZE;
 	p = base;
 	while ((p-base) < byte_count) {
-		remaining_bytes = byte_count - (p-base);
+		remaining_bytes = (size_t)byte_count - (size_t)(p-base);
 		if (remaining_bytes < WRITE_SUB_REQ_MIN_SIZE) {
 			return MB_ILLEGAL_DATA_VAL;
 		}
