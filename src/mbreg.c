@@ -145,7 +145,9 @@ extern const struct mbreg_desc_s *mbreg_find_desc(
 			} else if (reg->address < addr) {
 				l = m + 1u;
 			} else {
-				if (m == 0u) break; /* Prevent underflow */
+				if (m == 0u) { /* Prevent underflow */
+					break;
+				}
 				r = m - 1u;
 			}
 		}
@@ -301,7 +303,7 @@ static int read_block(const struct mbreg_desc_s *reg, uint16_t addr, uint8_t *re
 	ix = (size_t)(addr - reg->address) / reg_size_w;
 	start_addr = reg->address + (uint16_t)(ix * reg_size_w);
 
-	if ((addr-start_addr) >= reg_size_w) {
+	if ((addr-start_addr) >= (uint16_t)reg_size_w) {
 		return 0;
 	}
 
@@ -366,7 +368,7 @@ static size_t read_partial(
 	if ((reg->type & MRTYPE_BLOCK) != 0) {
 		ok=read_block(reg, addr, buf);
 	} else {
-		if (((addr - reg->address)*2u) >= reg_size) {
+		if (((addr - reg->address)*2u) >= (uint16_t)reg_size) {
 			return MBREG_READ_DEV_FAIL;
 		}
 
@@ -538,7 +540,7 @@ static enum mbstatus_e write_ptr_partial(
 
 	reg_size = mbreg_size(reg);
 
-	if (((addr - reg->address)*2u) >= reg_size) {
+	if (((addr - reg->address)*2u) >= (uint16_t)reg_size) {
 		return MB_DEV_FAIL;
 	}
 
@@ -606,9 +608,9 @@ static enum mbstatus_e write_block_partial(
 	reg_size = mbreg_size(reg);
 	reg_size_w = reg_size / 2u;
 	ix = (addr - reg->address) / reg_size_w;
-	start_addr = reg->address + ix * reg_size_w;
+	start_addr = reg->address + (uint16_t)(ix * reg_size_w);
 
-	if (((addr - start_addr)*2u) >= reg_size) {
+	if (((addr - start_addr)*2u) >= (uint16_t)reg_size) {
 		return MB_DEV_FAIL;
 	}
 
@@ -671,7 +673,7 @@ static enum mbstatus_e write_partial_fn(
 
 	reg_size = mbreg_size(reg);
 
-	if (((addr - reg->address)*2u) >= reg_size) {
+	if (((addr - reg->address)*2u) >= (uint16_t)reg_size) {
 		return MB_DEV_FAIL;
 	}
 

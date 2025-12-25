@@ -2,9 +2,9 @@ name: "Test Unit"
 
 on:
   push:
-    branches: [ "master" ]
+    branches: ["master", "dev"]
   pull_request:
-    branches: [ "master" ]
+    branches: ["master", "dev"]
 
 jobs:
   test-unit:
@@ -13,9 +13,15 @@ jobs:
     strategy:
       matrix:
         compiler: [gcc, clang]
+        optimization: [-Og, -O0, -O1, -O2, -O3, -Ofast, -Os, -Oz]
 
     steps:
-    - uses: actions/checkout@v6
+      - uses: actions/checkout@v6
 
-    - name: Run unit tests
-      run: make CC=${{ matrix.compiler }} LD=${{ matrix.compiler }} test -s
+      - name: Run unit tests
+        run: >-
+          make
+          CC=${{ matrix.compiler }}
+          LD=${{ matrix.compiler }}
+          OPT_LVL="${{ matrix.optimization }}"
+          test -s

@@ -2,11 +2,6 @@
  * @file endian.c
  * @brief Implementation of endian conversion utilities
  * @author Jonas Almås
- *
- * MISRA Deviations:
- * - Rule 11.3: A conversion shall not be performed between a pointer to object type and a pointer to a different object type
- *   Rationale: Essential for endian conversion in protocol implementation
- *   Mitigation: Type conversions are explicit and validated
  */
 
 /*
@@ -34,11 +29,13 @@
  */
 
 #include "endian.h"
+#include <stdint.h>
+#include <string.h>
 
 extern uint16_t betou16(const uint8_t *buf)
 {
-	return ((uint16_t)buf[0] << 8)
-		| ((uint16_t)buf[1]);
+	return (uint16_t)(((uint16_t)buf[0] << 8)
+		| ((uint16_t)buf[1]));
 }
 
 extern uint32_t betou32(const uint8_t *buf)
@@ -81,39 +78,44 @@ extern int64_t betoi64(const uint8_t *buf)
 
 extern float betof32(const uint8_t *buf)
 {
-	uint32_t tmp = betou32(buf);
-	return *(float *)&tmp;
+	float f;
+	uint32_t u32 = betou32(buf);
+	(void)memcpy(&f, &u32, sizeof f);
+	return f;
 }
 
 extern double betof64(const uint8_t *buf)
 {
-	uint64_t tmp = betou64(buf);
-	return *(double *)&tmp;
+	double f;
+	uint64_t u64 = betou64(buf);
+	(void)memcpy(&f, &u64, sizeof f);
+	return f;
 }
 
 extern uint16_t letou16(const uint8_t *buf)
 {
-	return (uint16_t)buf[0] | (uint16_t)buf[1] << 8;
+	return (uint16_t)(((uint16_t)buf[0])
+		| ((uint16_t)buf[1] << 8));
 }
 
 extern uint32_t letou32(const uint8_t *buf)
 {
-	return (uint32_t)buf[0]
-		| (uint32_t)buf[1] << 8
-		| (uint32_t)buf[2] << 16
-		| (uint32_t)buf[3] << 24;
+	return ((uint32_t)buf[0])
+		| ((uint32_t)buf[1] << 8)
+		| ((uint32_t)buf[2] << 16)
+		| ((uint32_t)buf[3] << 24);
 }
 
 extern uint64_t letou64(const uint8_t *buf)
 {
-	return (uint64_t)buf[0]
-		| (uint64_t)buf[1] << 8
-		| (uint64_t)buf[2] << 16
-		| (uint64_t)buf[3] << 24
-		| (uint64_t)buf[4] << 32
-		| (uint64_t)buf[5] << 40
-		| (uint64_t)buf[6] << 48
-		| (uint64_t)buf[7] << 56;
+	return ((uint64_t)buf[0])
+		| ((uint64_t)buf[1] << 8)
+		| ((uint64_t)buf[2] << 16)
+		| ((uint64_t)buf[3] << 24)
+		| ((uint64_t)buf[4] << 32)
+		| ((uint64_t)buf[5] << 40)
+		| ((uint64_t)buf[6] << 48)
+		| ((uint64_t)buf[7] << 56);
 }
 
 extern int16_t letoi16(const uint8_t *buf)
@@ -136,14 +138,18 @@ extern int64_t letoi64(const uint8_t *buf)
 
 extern float letof32(const uint8_t *buf)
 {
-	uint32_t tmp = letou32(buf);
-	return *(float *)&tmp;
+	float f;
+	uint32_t u32 = letou32(buf);
+	(void)memcpy(&f, &u32, sizeof f);
+	return f;
 }
 
 extern double letof64(const uint8_t *buf)
 {
-	uint64_t tmp = letou64(buf);
-	return *(double *)&tmp;
+	double f;
+	uint64_t u64 = letou64(buf);
+	(void)memcpy(&f, &u64, sizeof f);
+	return f;
 }
 
 extern void u16tobe(uint16_t val, uint8_t *dst)
@@ -189,12 +195,16 @@ extern void i64tobe(int64_t val, uint8_t *dst)
 
 extern void f32tobe(float val, uint8_t *dst)
 {
-	u32tobe(*(uint32_t *)&val, dst);
+	uint32_t u32;
+	(void)memcpy(&u32, &val, sizeof u32);
+	u32tobe(u32, dst);
 }
 
 extern void f64tobe(double val, uint8_t *dst)
 {
-	u64tobe(*(uint64_t *)&val, dst);
+	uint64_t u64;
+	(void)memcpy(&u64, &val, sizeof u64);
+	u64tobe(u64, dst);
 }
 
 extern void u16tole(uint16_t val, uint8_t *dst)
@@ -240,10 +250,14 @@ extern void i64tole(int64_t val, uint8_t *dst)
 
 extern void f32tole(float val, uint8_t *dst)
 {
-	u32tole(*(uint32_t *)&val, dst);
+	uint32_t u32;
+	(void)memcpy(&u32, &val, sizeof u32);
+	u32tole(u32, dst);
 }
 
 extern void f64tole(double val, uint8_t *dst)
 {
-	u64tole(*(uint64_t *)&val, dst);
+	uint64_t u64;
+	(void)memcpy(&u64, &val, sizeof u64);
+	u64tole(u64, dst);
 }

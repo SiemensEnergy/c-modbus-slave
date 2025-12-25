@@ -2,9 +2,9 @@ name: "Build Ubuntu"
 
 on:
   push:
-    branches: [ "master" ]
+    branches: ["master", "dev"]
   pull_request:
-    branches: [ "master" ]
+    branches: ["master", "dev"]
 
 jobs:
   build:
@@ -15,7 +15,7 @@ jobs:
         compiler: [gcc, clang]
 
     steps:
-    - uses: actions/checkout@v6
+      - uses: actions/checkout@v6
 
-    - name: Build
-      run: make CC=${{ matrix.compiler }} LD=${{ matrix.compiler }} -s
+      - name: Build
+        run: make CC=${{ matrix.compiler }} LD=${{ matrix.compiler }} -s

@@ -31,15 +31,20 @@ LIB_OBJ := ${addprefix ${BUILD_DIR}/lib/, ${LIB_SRC:.c=.o}}
 
 DEP_FILES := ${TEST_OBJ:.o=.d} ${LIB_OBJ:.o=.d}
 
-CFLAGS := -std=c11 -I../src
-# Generate dependency information
-CFLAGS += -MP -MMD
+# Overwritten in CI
+OPT_LVL := -Og
 
-# Clang Undefined Behavior Sanitizer
+CFLAGS := \
+	-std=c11 \
+	-I../src \
+	${OPT_LVL} \
+	-MP -MMD
+
+# Clang undefined behavior sanitizers
 ifeq (${CC}, clang)
 CFLAGS += \
-	-fsanitize=undefined \
 	-fsanitize-trap=all \
+	-fsanitize=undefined \
 	-fsanitize=implicit-conversion \
 	-fsanitize=integer \
 	-fsanitize=nullability
