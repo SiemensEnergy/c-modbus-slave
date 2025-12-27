@@ -66,8 +66,8 @@ For additional information, see [Modbus Application Protocol](https://www.modbus
 |       | 0x11  | **MBFC_REPORT_SLAVE_ID**       | Report slave identification      | _Serial only_ |
 | **X** | 0x14  | **MBFC_READ_FILE_RECORD**      | Read file record                 |               |
 | **X** | 0x15  | **MBFC_WRITE_FILE_RECORD**     | Write file record                |               |
-| **X** | 0x16  | **MBFC_MASK_WRITE_REG**        | Mask Write Register              |               |
-| **X** | 0x17  | **MBFC_READ_WRITE_REGS**       | Read/Write multiple registers    |               |
+| **X** | 0x16  | **MBFC_MASK_WRITE_REG**        | Mask write register              |               |
+| **X** | 0x17  | **MBFC_READ_WRITE_REGS**       | Read/write multiple registers    |               |
 |       | 0x18  | **MBFC_READ_FIFO_QUEUE**       | Read FIFO queue                  |               |
 
 ## Status Codes

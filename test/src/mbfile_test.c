@@ -218,8 +218,8 @@ TEST(mbfile_write_allowed_missing_register)
 	uint8_t data[] = {0x12, 0x34, 0x56, 0x78};
 
 	/* Try to write to record 2 (doesn't exist) */
-	enum mbstatus_e status = mbfile_write_allowed(&file, 2, 2, data);
-	ASSERT_EQ(MB_ILLEGAL_DATA_ADDR, status);
+	int write_allowed = mbfile_write_allowed(&file, 2, 2, data);
+	ASSERT_EQ(0, write_allowed);
 }
 
 TEST(mbfile_write_allowed_partial_success)
@@ -239,8 +239,8 @@ TEST(mbfile_write_allowed_partial_success)
 	uint8_t data[] = {0x12, 0x34, 0x56, 0x78, 0x9A, 0xBC};
 
 	/* Try to write 3 registers starting from 1 (should fail at address 3) */
-	enum mbstatus_e status = mbfile_write_allowed(&file, 1, 3, data);
-	ASSERT_EQ(MB_ILLEGAL_DATA_ADDR, status);
+	int write_allowed = mbfile_write_allowed(&file, 1, 3, data);
+	ASSERT_EQ(0, write_allowed);
 }
 
 TEST(mbfile_write_success)

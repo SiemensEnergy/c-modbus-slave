@@ -144,8 +144,11 @@ extern enum mbfile_read_status_e mbfile_read(
  * @param record_no Starting record number within the file (0-based index)
  * @param record_length Number of 16-bit registers to write to the record
  * @param val Pointer to the data values to be written (for validation purposes)
+ *
+ * @retval 1 Write allowed
+ * @retval 0 Write not allowed
  */
-extern enum mbstatus_e mbfile_write_allowed(
+extern int mbfile_write_allowed(
 	const struct mbfile_desc_s *file,
 	uint16_t record_no,
 	uint16_t record_length,
