@@ -150,7 +150,7 @@ extern enum mbfile_read_status_e mbfile_read(
 	return MBFILE_READ_OK;
 }
 
-extern enum mbstatus_e mbfile_write_allowed(
+extern int mbfile_write_allowed(
 	const struct mbfile_desc_s *file,
 	uint16_t record_no,
 	uint16_t record_length,
@@ -163,7 +163,7 @@ extern enum mbstatus_e mbfile_write_allowed(
 	for (reg_offs=0u; reg_offs<record_length; ) {
 		addr = record_no + reg_offs;
 		if ((reg = mbreg_find_desc(file->records, file->n_records, addr)) == NULL) {
-			return MB_ILLEGAL_DATA_ADDR;
+			return 0;
 		}
 
 		n_regs_written = mbreg_write_allowed(
@@ -173,7 +173,7 @@ extern enum mbstatus_e mbfile_write_allowed(
 			record_length-reg_offs,
 			val + (reg_offs*2u));
 		if (n_regs_written == 0u) {
-			return MB_ILLEGAL_DATA_ADDR;
+			return 0;
 		}
 
 		/* Advance by the actual written register size to handle
@@ -181,7 +181,7 @@ extern enum mbstatus_e mbfile_write_allowed(
 		reg_offs += (uint16_t)n_regs_written;
 	}
 
-	return MB_OK;
+	return 1;
 }
 
 extern enum mbstatus_e mbfile_write(

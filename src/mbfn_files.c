@@ -285,9 +285,8 @@ extern enum mbstatus_e mbfn_file_write(
 
 		p += WRITE_SUB_REQ_HEADER_SIZE;
 
-		status = mbfile_write_allowed(file, record_no, record_length, p);
-		if (status != MB_OK) {
-			return status;
+		if (!mbfile_write_allowed(file, record_no, record_length, p)) {
+			return MB_ILLEGAL_DATA_ADDR;
 		}
 
 		p += record_length * 2u;
