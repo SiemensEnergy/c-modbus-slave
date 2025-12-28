@@ -1,9 +1,9 @@
 # C Modbus Slave
 
 [![License](https://img.shields.io/github/license/SiemensEnergy/c-modbus-slave.svg)](https://github.com/SiemensEnergy/c-modbus-slave/blob/master/LICENSE)
-[![Releases](https://img.shields.io/github/v/release/SiemensEnergy/c-modbus-slave)](https://github.com/SiemensEnergy/c-modbus-slave/releases)
+[![Release](https://img.shields.io/github/v/release/SiemensEnergy/c-modbus-slave)](https://github.com/SiemensEnergy/c-modbus-slave/releases)
 [![C Standard](https://img.shields.io/badge/C-C11-blue.svg)](https://en.wikipedia.org/wiki/C11_(C_standard_revision))
-[![MISRA C](https://img.shields.io/badge/MISRA-C%3A2023-brightgreen.svg)](https://misra.org.uk/)
+[![MISRA C](https://img.shields.io/badge/MISRA-C%3A2012-brightgreen.svg)](https://misra.org.uk/)
 [![Stars](https://img.shields.io/github/stars/SiemensEnergy/c-modbus-slave?style=social)](https://github.com/SiemensEnergy/c-modbus-slave/stargazers)
 
 Lightweight [Modbus](https://en.wikipedia.org/wiki/Modbus) slave implementation for embedded C applications
@@ -78,7 +78,7 @@ if (resp_len) {
 
 ## Code Quality
 
-This project follows **MISRA C:2023** coding standards with a few documented exceptions where necessary for functionality or compatibility. The codebase emphasizes:
+This project follows **MISRA C:2012** coding standards with a few documented exceptions where necessary for functionality or compatibility. The codebase emphasizes:
 
 - Static analysis compliance for safety-critical applications
 - Predictable behavior and reduced complexity
