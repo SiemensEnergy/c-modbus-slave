@@ -6,7 +6,7 @@
 [![MISRA C](https://img.shields.io/badge/MISRA-C%3A2012-brightgreen.svg)](https://misra.org.uk/)
 [![Stars](https://img.shields.io/github/stars/SiemensEnergy/c-modbus-slave?style=social)](https://github.com/SiemensEnergy/c-modbus-slave/stargazers)
 
-Lightweight [Modbus](https://en.wikipedia.org/wiki/Modbus) slave implementation for embedded C applications
+Lightweight [Modbus](https://en.wikipedia.org/wiki/Modbus) slave stack for embedded C applications
 
 ## Features
 
@@ -53,7 +53,7 @@ static struct mbinst_s s_inst = {
 };
 
 /* 4. Initialize internal instance state */
-mbinst_init(&inst);
+mbinst_init(&s_inst);
 
 /* 5. Handle incoming requests */
 uint8_t req[MBADU_SIZE_MAX];
