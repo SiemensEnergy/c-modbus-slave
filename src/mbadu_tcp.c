@@ -70,7 +70,7 @@ extern size_t mbadu_tcp_handle_req(
 
 	/** @note Length includes unit id */
 	if ((length < 1u)
-			|| (length-1u) > MBPDU_DATA_SIZE_MAX
+			|| (length-1u) > MBPDU_SIZE_MAX
 			|| (req_len < (length-1u+MBAP_SIZE))) {
 		return 0u;
 	}
