@@ -1,5 +1,5 @@
 /**
- * @file mbfn_digs.c
+ * @file mbfn_diag.c
  * @brief Implementation of Modbus diagnostic function handlers
  * @author Jonas Almås
  *
@@ -39,7 +39,7 @@
  * Authorized representative: Edgar Vorland, SE TI EAD MF&P SUS OMS, Group Manager Electronics
  */
 
-#include "mbfn_digs.h"
+#include "mbfn_diag.h"
 #include "endian.h"
 #include <string.h>
 
@@ -226,7 +226,7 @@ static enum mbstatus_e clr_overrun(
 	return MB_OK;
 }
 
-extern enum mbstatus_e mbfn_digs(
+extern enum mbstatus_e mbfn_diag(
 	struct mbinst_s *inst,
 	const uint8_t *req,
 	size_t req_len,
@@ -243,21 +243,21 @@ extern enum mbstatus_e mbfn_digs(
 	res->size = 3u;
 
 	switch (betou16(req+1u)) {
-	case MBFC_DIGS_LOOPBACK: return loopback(req, req_len, res);
-	case MBFC_DIGS_RESTART_COMMS_OPT: return restart_comms_opt(inst, req, req_len, res);
-	case MBFC_DIGS_REG: return read_diagnostic_reg(inst, req, req_len, res);
-	case MBFC_DIGS_ASCII_DELIM: return change_ascii_delimiter(inst, req, req_len, res);
-	case MBFC_DIGS_FORCE_LISTEN: return force_listen_only(inst, req, req_len);
-	case MBFC_DIGS_CLR_CNTS_N_DIAG_REG: return clear_counts_n_diag_reg(inst, req, req_len, res);
-	case MBFC_DIGS_BUS_MSG_COUNT: return read_counter(inst->state.bus_msg_counter, req, req_len, res);
-	case MBFC_DIGS_BUS_COMM_ERR_COUNT: return read_counter(inst->state.bus_comm_err_counter, req, req_len, res);
-	case MBFC_DIGS_BUS_EXCEPTION_COUNT: return read_counter(inst->state.exception_counter, req, req_len, res);
-	case MBFC_DIGS_MSG_COUNT: return read_counter(inst->state.msg_counter, req, req_len, res);
-	case MBFC_DIGS_NO_RESP_MSG_COUNT: return read_counter(inst->state.no_resp_counter, req, req_len, res);
-	case MBFC_DIGS_NAK_COUNT: return read_counter(inst->state.nak_counter, req, req_len, res);
-	case MBFC_DIGS_BUSY_COUNT: return read_counter(inst->state.busy_counter, req, req_len, res);
-	case MBFC_DIGS_BUS_OVERRUN_COUNT: return read_counter(inst->state.bus_char_overrun_counter, req, req_len, res);
-	case MBFC_DIGS_CLR_OVERRUN: return clr_overrun(inst, req, req_len, res);
+	case MBFC_DIAG_LOOPBACK: return loopback(req, req_len, res);
+	case MBFC_DIAG_RESTART_COMMS_OPT: return restart_comms_opt(inst, req, req_len, res);
+	case MBFC_DIAG_REG: return read_diagnostic_reg(inst, req, req_len, res);
+	case MBFC_DIAG_ASCII_DELIM: return change_ascii_delimiter(inst, req, req_len, res);
+	case MBFC_DIAG_FORCE_LISTEN: return force_listen_only(inst, req, req_len);
+	case MBFC_DIAG_CLR_CNTS_N_DIAG_REG: return clear_counts_n_diag_reg(inst, req, req_len, res);
+	case MBFC_DIAG_BUS_MSG_COUNT: return read_counter(inst->state.bus_msg_counter, req, req_len, res);
+	case MBFC_DIAG_BUS_COMM_ERR_COUNT: return read_counter(inst->state.bus_comm_err_counter, req, req_len, res);
+	case MBFC_DIAG_BUS_EXCEPTION_COUNT: return read_counter(inst->state.exception_counter, req, req_len, res);
+	case MBFC_DIAG_MSG_COUNT: return read_counter(inst->state.msg_counter, req, req_len, res);
+	case MBFC_DIAG_NO_RESP_MSG_COUNT: return read_counter(inst->state.no_resp_counter, req, req_len, res);
+	case MBFC_DIAG_NAK_COUNT: return read_counter(inst->state.nak_counter, req, req_len, res);
+	case MBFC_DIAG_BUSY_COUNT: return read_counter(inst->state.busy_counter, req, req_len, res);
+	case MBFC_DIAG_BUS_OVERRUN_COUNT: return read_counter(inst->state.bus_char_overrun_counter, req, req_len, res);
+	case MBFC_DIAG_CLR_OVERRUN: return clr_overrun(inst, req, req_len, res);
 	default: return MB_ILLEGAL_FN;
 	}
 }

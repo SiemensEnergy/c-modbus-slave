@@ -82,9 +82,9 @@ extern enum mbstatus_e mbfn_read_coils(
 		return MB_ILLEGAL_DATA_VAL;
 	}
 
-	/* If we read multiple coils and one of them doesn't exist,
-	   we just padd that wil zeros.
-	   We don't want to do this if the first coils is missing.
+	/* If we read multiple coils and one of them don't exist,
+	   we just leave it as zero.
+	   We don't want to do this if the first coil is missing.
 	 */
 	if (!mbcoil_find_desc(coils, n_coils, start_addr)) {
 		return MB_ILLEGAL_DATA_ADDR;
@@ -224,7 +224,7 @@ extern enum mbstatus_e mbfn_write_coils(
 		return MB_ILLEGAL_DATA_VAL;
 	}
 
-	/* Ensure all coils exists and can be written to before writing anything */
+	/* Ensure all coils exist and can be written to before writing anything */
 	for (i=0u; i<quantity; ++i) {
 		addr = start_addr + (uint16_t)i;
 		if ((coil = mbcoil_find_desc(coils, n_coils, addr)) == NULL) {

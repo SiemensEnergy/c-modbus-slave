@@ -13,7 +13,7 @@ LIB_SRC := \
 	mbcrc.c \
 	mbfile.c \
 	mbfn_coils.c \
-	mbfn_digs.c \
+	mbfn_diag.c \
 	mbfn_files.c \
 	mbfn_regs.c \
 	mbfn_serial.c \

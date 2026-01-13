@@ -134,7 +134,7 @@ extern int mbtest_regs_validate_all(
     uint16_t *issue_addr);
 
 /**
- * @brief Check that all file numbers are ascending and that there no no duplicates
+ * @brief Check that all file numbers are ascending and that there are no duplicates
  * @param issue_file_no Optional - e.g. printf("0x%04x\n", issue_file_no);
  * @return 1 success, 0 failure
  *

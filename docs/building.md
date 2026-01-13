@@ -16,7 +16,7 @@ Files marked **X** must always be compiled, regardless of transport protocol.
 | **X** | mbcrc.c       |                     |
 | **X** | mbfile.c      |                     |
 | **X** | mbfn_coils.c  |                     |
-| **X** | mbfn_digs.c   |                     |
+| **X** | mbfn_diag.c   |                     |
 | **X** | mbfn_files.c  |                     |
 | **X** | mbfn_regs.c   |                     |
 | **X** | mbfn_serial.c |                     |

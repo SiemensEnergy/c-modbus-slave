@@ -1,5 +1,5 @@
 /**
- * @file mbfn_digs.h
+ * @file mbfn_diag.h
  * @brief Modbus diagnostic function handlers
  * @author Jonas Almås
  *
@@ -35,8 +35,8 @@
  * Authorized representative: Edgar Vorland, SE TI EAD MF&P SUS OMS, Group Manager Electronics
  */
 
-#ifndef MBFN_DIGS_H_INCLUDED
-#define MBFN_DIGS_H_INCLUDED
+#ifndef MBFN_DIAG_H_INCLUDED
+#define MBFN_DIAG_H_INCLUDED
 
 #include "mbinst.h"
 #include "mbpdu.h"
@@ -64,7 +64,7 @@
  * @note Request format: [function_code][subfunction_hi][subfunction_lo][data...]
  * @note Response format varies by subfunction, typically echoes request format
  */
-extern enum mbstatus_e mbfn_digs(
+extern enum mbstatus_e mbfn_diag(
 	struct mbinst_s *inst,
 	const uint8_t *req,
 	size_t req_len,
@@ -123,4 +123,4 @@ extern enum mbstatus_e mbfn_comm_event_log(
 	size_t req_len,
 	struct mbpdu_buf_s *res);
 
-#endif /* MBFN_DIGS_H_INCLUDED */
+#endif /* MBFN_DIAG_H_INCLUDED */
