@@ -224,7 +224,7 @@ extern enum mbstatus_e mbfn_write_coils(
 		return MB_ILLEGAL_DATA_VAL;
 	}
 
-	/* Ensure all coils exists and can be written to before writing anything */
+	/* Ensure all coils exist and can be written to before writing anything */
 	for (i=0u; i<quantity; ++i) {
 		addr = start_addr + (uint16_t)i;
 		if ((coil = mbcoil_find_desc(coils, n_coils, addr)) == NULL) {

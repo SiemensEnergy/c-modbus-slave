@@ -36,7 +36,7 @@
 #include "endian.h"
 #include "mbdef.h"
 #include "mbfn_coils.h"
-#include "mbfn_digs.h"
+#include "mbfn_diag.h"
 #include "mbfn_files.h"
 #include "mbfn_regs.h"
 #include "mbfn_serial.h"
@@ -85,7 +85,7 @@ static enum mbstatus_e handle(
 			return mbfn_read_exception_status(inst, req, req_len, res);
 		}
 		break;
-	case MBFC_DIAGNOSTICS: return mbfn_digs(inst, req, req_len, res);
+	case MBFC_DIAGNOSTICS: return mbfn_diag(inst, req, req_len, res);
 	case MBFC_COMM_EVENT_COUNTER: return mbfn_comm_event_counter(inst, req, req_len, res);
 	case MBFC_COMM_EVENT_LOG: return mbfn_comm_event_log(inst, req, req_len, res);
 	case MBFC_WRITE_MULTIPLE_COILS:
@@ -151,7 +151,7 @@ extern size_t mbpdu_handle_req(
 	if (inst->state.is_listen_only
 			&& ((req_len<3u)
 				|| (req[0]!=MBFC_DIAGNOSTICS)
-				|| (betou16(req+1u)!=MBFC_DIGS_RESTART_COMMS_OPT))) {
+				|| (betou16(req+1u)!=MBFC_DIAG_RESTART_COMMS_OPT))) {
 		send_event |= MB_COMM_EVENT_SEND_LISTEN_ONLY;
 		mb_add_comm_event(inst, send_event);
 		return 0u;

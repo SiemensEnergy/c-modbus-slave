@@ -72,24 +72,24 @@ enum mbfc_e {
 };
 
 /** Modbus diagnostics sub function code */
-enum mbfn_digs_e {
-	MBFC_DIGS_LOOPBACK = 0x00u, /* Return Query Data */
-	MBFC_DIGS_RESTART_COMMS_OPT = 0x01u, /* Restart Communications Option */
-	MBFC_DIGS_REG = 0x02u, /* Return Diagnostic Register */
-	MBFC_DIGS_ASCII_DELIM = 0x03u, /* Change ASCII Input Delimiter */
-	MBFC_DIGS_FORCE_LISTEN = 0x04u, /* Force Listen Only Mode */
+enum mbfn_diag_e {
+	MBFC_DIAG_LOOPBACK = 0x00u, /* Return Query Data */
+	MBFC_DIAG_RESTART_COMMS_OPT = 0x01u, /* Restart Communications Option */
+	MBFC_DIAG_REG = 0x02u, /* Return Diagnostic Register */
+	MBFC_DIAG_ASCII_DELIM = 0x03u, /* Change ASCII Input Delimiter */
+	MBFC_DIAG_FORCE_LISTEN = 0x04u, /* Force Listen Only Mode */
 	/* 0x05..0x09 - Reserved */
-	MBFC_DIGS_CLR_CNTS_N_DIAG_REG = 0x0Au, /* Clear Counters and Diagnostic Register */
-	MBFC_DIGS_BUS_MSG_COUNT = 0x0Bu, /* Return Bus Message Count */
-	MBFC_DIGS_BUS_COMM_ERR_COUNT = 0x0Cu, /* Return Bus Communication Error Count */
-	MBFC_DIGS_BUS_EXCEPTION_COUNT = 0x0Du, /* Return Bus Exception Error Count */
-	MBFC_DIGS_MSG_COUNT = 0x0Eu, /* Return Server Message Count */
-	MBFC_DIGS_NO_RESP_MSG_COUNT = 0x0Fu, /* Return Server No Response Count */
-	MBFC_DIGS_NAK_COUNT = 0x10u, /* Return Server NAK Count */
-	MBFC_DIGS_BUSY_COUNT = 0x11u, /* Return Server Busy Count */
-	MBFC_DIGS_BUS_OVERRUN_COUNT = 0x12u, /* Return Bus Character Overrun Count */
+	MBFC_DIAG_CLR_CNTS_N_DIAG_REG = 0x0Au, /* Clear Counters and Diagnostic Register */
+	MBFC_DIAG_BUS_MSG_COUNT = 0x0Bu, /* Return Bus Message Count */
+	MBFC_DIAG_BUS_COMM_ERR_COUNT = 0x0Cu, /* Return Bus Communication Error Count */
+	MBFC_DIAG_BUS_EXCEPTION_COUNT = 0x0Du, /* Return Bus Exception Error Count */
+	MBFC_DIAG_MSG_COUNT = 0x0Eu, /* Return Server Message Count */
+	MBFC_DIAG_NO_RESP_MSG_COUNT = 0x0Fu, /* Return Server No Response Count */
+	MBFC_DIAG_NAK_COUNT = 0x10u, /* Return Server NAK Count */
+	MBFC_DIAG_BUSY_COUNT = 0x11u, /* Return Server Busy Count */
+	MBFC_DIAG_BUS_OVERRUN_COUNT = 0x12u, /* Return Bus Character Overrun Count */
 	/* 0x13 - Reserved */
-	MBFC_DIGS_CLR_OVERRUN = 0x14u, /* Clear Overrun Counter and Flag */
+	MBFC_DIAG_CLR_OVERRUN = 0x14u, /* Clear Overrun Counter and Flag */
 	/* 0x15-0xFFFF - Reserved */
 };
 

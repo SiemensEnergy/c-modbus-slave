@@ -6,7 +6,7 @@ LIB_SRC := \
 	mbcoil.c \
 	mbcrc.c \
 	mbfn_coils.c \
-	mbfn_digs.c \
+	mbfn_dags.c \
 	mbfn_regs.c \
 	mbfn_serial.c \
 	mbinst.c \
