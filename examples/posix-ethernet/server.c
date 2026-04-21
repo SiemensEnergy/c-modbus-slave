@@ -87,6 +87,5 @@ extern ssize_t server_send(int s, const uint8_t *buf, size_t len)
 
 extern int server_close(int s)
 {
-	/* TODO: Consider shutdown socket */
 	return close(s);
 }
