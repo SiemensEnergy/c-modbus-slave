@@ -50,12 +50,12 @@ enum {
 	 */
 	MBADU_SIZE_MIN=4u,
 	/*
-	* - 1 Slave address
-	* - 253 PDU
-	*   - 1 Function code
-	*   - 252 PDU data
-	* - 2 crc
-	*/
+	 * - 1 Slave address
+	 * - 253 PDU
+	 *   - 1 Function code
+	 *   - 252 PDU data
+	 * - 2 crc
+	 */
 	MBADU_SIZE_MAX=256u,
 };
 
