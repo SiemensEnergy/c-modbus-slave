@@ -142,7 +142,7 @@ extern size_t mbpdu_handle_req(
 	struct mbpdu_buf_s res_pdu;
 
 	if ((inst==NULL) || (req==NULL) || (res==NULL)) return 0u;
-	if (req_len<1u) return 0u;
+	if (req_len<MBPDU_SIZE_MIN || req_len>MBPDU_SIZE_MAX) return 0u;
 
 	send_event = MB_COMM_EVENT_IS_SEND;
 

@@ -44,6 +44,14 @@
 
 enum {
 	MBPDU_DATA_SIZE_MAX=252u,
+	/*
+	 * - 1 Function code
+	 */
+	MBPDU_SIZE_MIN=1u,
+	/*
+	 * - 1 Function code
+	 * - 252 PDU data
+	 */
 	MBPDU_SIZE_MAX=1u+MBPDU_DATA_SIZE_MAX,
 };
 

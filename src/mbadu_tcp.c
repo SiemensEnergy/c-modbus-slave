@@ -54,8 +54,7 @@ extern size_t mbadu_tcp_handle_req(
 
 	if ((inst==NULL) || (req==NULL) || (res==NULL)) return 0u;
 
-	/* We must at least have a complate header + function code */
-	if (req_len < (MBAP_SIZE+1u)) {
+	if (req_len<MBADU_TCP_SIZE_MIN || req_len>MBADU_TCP_SIZE_MAX) {
 		return 0u;
 	}
 
