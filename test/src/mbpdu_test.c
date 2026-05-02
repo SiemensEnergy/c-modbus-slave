@@ -3072,6 +3072,104 @@ TEST(mbpdu_mask_write_function_access_works)
 	ASSERT_EQ(0x5A5A, s_test_mask_write_fn_value);
 }
 
+TEST(mbpdu_write_multiple_regs_excess_quantity_fails)
+{
+	/*
+	 * Spec sec 6.12: quantity must be 1..123 (0x007B).
+	 * Quantity=124 → exception 03 (ILLEGAL DATA VALUE).
+	 */
+	uint16_t reg_val = 0u;
+	const struct mbreg_desc_s regs[] = {{
+		.address=0x0000u,
+		.type=MRTYPE_U16,
+		.access=MRACC_RW_PTR,
+		.read={.pu16=&reg_val},
+		.write={.pu16=&reg_val},
+	}};
+	struct mbinst_s inst = {.hold_regs=regs, .n_hold_regs=1u};
+	mbinst_init(&inst);
+
+	uint8_t pdu_data[] = {
+		MBFC_WRITE_MULTIPLE_REGS,
+		0x00u, 0x00u,  /* start address */
+		0x00u, 0x7Cu,  /* quantity: 124 (exceeds max of 123) */
+		0xF8u,         /* byte count: 124*2=248 */
+	};
+	uint8_t res[MBPDU_SIZE_MAX];
+	size_t res_size = mbpdu_handle_req(&inst, pdu_data, sizeof pdu_data, res);
+
+	ASSERT_EQ(2u, res_size);
+	ASSERT(res[0] & MB_ERR_FLG);
+	ASSERT_EQ(MB_ILLEGAL_DATA_VAL, res[1]);
+}
+
+TEST(mbpdu_read_write_regs_excess_read_quantity_fails)
+{
+	/*
+	 * Spec sec 6.17: quantity to read must be 1..125 (0x007D).
+	 * Read quantity=126 → exception 03 (ILLEGAL DATA VALUE).
+	 */
+	uint16_t reg_val = 0u;
+	const struct mbreg_desc_s regs[] = {{
+		.address=0x0000u,
+		.type=MRTYPE_U16,
+		.access=MRACC_RW_PTR,
+		.read={.pu16=&reg_val},
+		.write={.pu16=&reg_val},
+	}};
+	struct mbinst_s inst = {.hold_regs=regs, .n_hold_regs=1u};
+	mbinst_init(&inst);
+
+	uint8_t pdu_data[] = {
+		MBFC_READ_WRITE_REGS,
+		0x00u, 0x00u,  /* read start address */
+		0x00u, 0x7Eu,  /* read quantity: 126 (exceeds max of 125) */
+		0x00u, 0x00u,  /* write start address */
+		0x00u, 0x01u,  /* write quantity: 1 */
+		0x02u,         /* write byte count */
+		0x00u, 0x00u,  /* write data */
+	};
+	uint8_t res[MBPDU_SIZE_MAX];
+	size_t res_size = mbpdu_handle_req(&inst, pdu_data, sizeof pdu_data, res);
+
+	ASSERT_EQ(2u, res_size);
+	ASSERT(res[0] & MB_ERR_FLG);
+	ASSERT_EQ(MB_ILLEGAL_DATA_VAL, res[1]);
+}
+
+TEST(mbpdu_read_write_regs_excess_write_quantity_fails)
+{
+	/*
+	 * Spec sec 6.17: quantity to write must be 1..121 (0x0079).
+	 * Write quantity=122 → exception 03 (ILLEGAL DATA VALUE).
+	 */
+	uint16_t reg_val = 0u;
+	const struct mbreg_desc_s regs[] = {{
+		.address=0x0000u,
+		.type=MRTYPE_U16,
+		.access=MRACC_RW_PTR,
+		.read={.pu16=&reg_val},
+		.write={.pu16=&reg_val},
+	}};
+	struct mbinst_s inst = {.hold_regs=regs, .n_hold_regs=1u};
+	mbinst_init(&inst);
+
+	uint8_t pdu_data[] = {
+		MBFC_READ_WRITE_REGS,
+		0x00u, 0x00u,  /* read start address */
+		0x00u, 0x01u,  /* read quantity: 1 */
+		0x00u, 0x00u,  /* write start address */
+		0x00u, 0x7Au,  /* write quantity: 122 (exceeds max of 121) */
+		0xF4u,         /* write byte count: 122*2=244 */
+	};
+	uint8_t res[MBPDU_SIZE_MAX];
+	size_t res_size = mbpdu_handle_req(&inst, pdu_data, sizeof pdu_data, res);
+
+	ASSERT_EQ(2u, res_size);
+	ASSERT(res[0] & MB_ERR_FLG);
+	ASSERT_EQ(MB_ILLEGAL_DATA_VAL, res[1]);
+}
+
 TEST_MAIN(
 	mbpdu_read_holding_reg_works,
 	mbpdu_read_input_reg_works,
@@ -3150,5 +3248,8 @@ TEST_MAIN(
 	mbpdu_mask_write_i32_works,
 	mbpdu_mask_write_different_addresses_u32,
 	mbpdu_mask_write_signed_negative_preservation,
-	mbpdu_mask_write_function_access_works
+	mbpdu_mask_write_function_access_works,
+	mbpdu_write_multiple_regs_excess_quantity_fails,
+	mbpdu_read_write_regs_excess_read_quantity_fails,
+	mbpdu_read_write_regs_excess_write_quantity_fails
 );

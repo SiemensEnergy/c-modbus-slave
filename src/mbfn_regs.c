@@ -51,7 +51,8 @@
 
 enum {
 	MBREG_N_READ_MAX=0x7Du,
-	MBREG_N_WRITE_MAX=0x7Bu,
+	MBREG_N_WRITE_MAX=0x7Bu, /* Fc 0x10 */
+	MBREG_N_RW_WRITE_MAX=0x79u, /* Fc 0x17 */
 };
 
 static enum mbstatus_e read_regs(
@@ -130,15 +131,6 @@ static enum mbstatus_e write_regs(
 	enum mbstatus_e status;
 	uint16_t reg_offs, addr;
 	size_t n_regs_written;
-
-	if ((n_req_regs==0u) || (n_req_regs>MBREG_N_WRITE_MAX)) {
-		return MB_ILLEGAL_DATA_VAL;
-	}
-
-	/* Make sure received byte count matches number of registers to write */
-	if ((n_req_regs*2u) != byte_count) {
-		return MB_ILLEGAL_DATA_VAL;
-	}
 
 	/* Ensure all registers exist and can be written to before writing anything */
 	for (reg_offs=0u; reg_offs < n_req_regs; ) {
@@ -317,6 +309,15 @@ extern enum mbstatus_e mbfn_write_regs(
 		return MB_ILLEGAL_DATA_VAL;
 	}
 
+	if ((n_req_regs==0u) || (n_req_regs>MBREG_N_WRITE_MAX)) {
+		return MB_ILLEGAL_DATA_VAL;
+	}
+
+	/* Make sure received byte count matches number of registers to write */
+	if ((n_req_regs*2u) != byte_count) {
+		return MB_ILLEGAL_DATA_VAL;
+	}
+
 	return write_regs(
 		inst,
 		regs,
@@ -424,6 +425,15 @@ extern enum mbstatus_e mbfn_read_write_regs(
 		1); /* is_hold_reg = 1 since function 0x17 only operates on holding registers */
 	if (status != MB_OK) {
 		return status;
+	}
+
+	if ((n_write_regs==0u) || (n_write_regs>MBREG_N_RW_WRITE_MAX)) {
+		return MB_ILLEGAL_DATA_VAL;
+	}
+
+	/* Make sure received byte count matches number of registers to write */
+	if ((n_write_regs*2u) != write_byte_count) {
+		return MB_ILLEGAL_DATA_VAL;
 	}
 
 	/* Perform write operation first (as per Modbus spec) */
