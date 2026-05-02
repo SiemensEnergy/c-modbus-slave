@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.6.2] - 2026-05-02
+
+### Fixed
+
+- Use current max quantity for function code 0x17 (Read/Write Multiple registers)
+
 ## [1.6.1] - 2026-04-25
 
 ## Changed
