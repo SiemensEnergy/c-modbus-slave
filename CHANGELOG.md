@@ -11,17 +11,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
-- Use current max quantity for function code 0x17 (Read/Write Multiple registers)
+- Use correct max quantity for function code 0x17 (Read/Write Multiple registers)
 
 ## [1.6.1] - 2026-04-25
 
-## Changed
+### Changed
 
 - Enforce max request length in PDU handler
 
 ## [1.6.0] - 2026-01-03
 
-## Changed
+### Changed
 
 - Rename diagnostic module from digs to diag
 
@@ -74,7 +74,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - Added support for register block access of 8-bit values
-- Improve runtime validation for incorrect register descriptor configuration
+- Improved runtime validation for incorrect register descriptor configuration
 
 ## [1.1.0] - 2025-09-03
 
@@ -88,7 +88,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Don't increment comm event counter for diagnostic requests (Function code 0x08)
 - Check CRC before slave address in ADU handling to monitor the overall health of the bus, not just this device
-- Increment server message count before handling requests to act correct on communication reset
+- Increment server message count before handling requests to act correctly on communication reset
 - Create send communication event for all processed requests
 
 ## [1.0.0] - 2025-09-02
