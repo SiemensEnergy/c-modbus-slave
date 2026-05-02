@@ -164,7 +164,7 @@ extern const struct mbreg_desc_s *mbreg_find_desc(
 }
 
 /**
- * @brief Check if register is configure correctly for reading from pointer
+ * @brief Check if register is configured correctly for reading from pointer
  */
 static int read_ptr_ok(const struct mbreg_desc_s *reg)
 {
@@ -184,7 +184,7 @@ static int read_ptr_ok(const struct mbreg_desc_s *reg)
 }
 
 /**
- * @brief Check if register is configure correctly for reading from function
+ * @brief Check if register is configured correctly for reading from function
  */
 static int read_fn_ok(const struct mbreg_desc_s *reg)
 {
@@ -204,7 +204,7 @@ static int read_fn_ok(const struct mbreg_desc_s *reg)
 }
 
 /**
- * @brief Check if register is configure correctly for writing to pointer
+ * @brief Check if register is configured correctly for writing to pointer
  */
 static int write_ptr_ok(const struct mbreg_desc_s *reg)
 {
@@ -224,7 +224,7 @@ static int write_ptr_ok(const struct mbreg_desc_s *reg)
 }
 
 /**
- * @brief Check if register is configure correctly for writing to function
+ * @brief Check if register is configured correctly for writing to function
  */
 static int write_fn_ok(const struct mbreg_desc_s *reg)
 {

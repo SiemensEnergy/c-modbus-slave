@@ -1,5 +1,5 @@
 /**
- * @file mbfn_diag.h
+ * @file mbfn_digs.h
  * @brief Modbus diagnostic function handlers
  * @author Jonas Almås
  *

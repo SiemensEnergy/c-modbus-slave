@@ -42,7 +42,7 @@
 #include "mbcrc.h"
 
 /**
- * @brief Add Slave addres and CRC to response ADU
+ * @brief Add Slave address and CRC to response ADU
  */
 static size_t prep_res(uint8_t slave_addr, uint8_t *res, size_t pdu_size)
 {

@@ -1,6 +1,6 @@
 /**
  * @file mbfn_files.c
- * @brief Implementation of Modbus file records function handles
+ * @brief Implementation of Modbus file records function handlers
  * @author Jonas Almås
  *
  * MISRA Deviations:
@@ -306,7 +306,7 @@ extern enum mbstatus_e mbfn_file_write(
 
 		file = mbfile_find(inst->files, inst->n_files, file_no);
 		status = mbfile_write(file, record_no, record_length, p);
-		if (status != MB_OK) { /* Request might me incomplete, not ideal... */
+		if (status != MB_OK) { /* Request might be incomplete, not ideal... */
 			return status;
 		}
 

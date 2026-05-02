@@ -146,7 +146,7 @@ extern size_t mbadu_ascii_handle_req(
 
 	/* Convert ascii request to binary */
 	req_bin_len = 0u;
-	for (i=1u; i<(req_len-2u); i+=2u) { /* Excluding start char end crlf */
+	for (i=1u; i<(req_len-2u); i+=2u) { /* Excluding start char and crlf */
 		req_bin[req_bin_len++] = (uint8_t)(xtoi(req[i])*16 + xtoi(req[i+1u]));
 	}
 

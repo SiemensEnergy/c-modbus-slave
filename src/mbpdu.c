@@ -204,7 +204,7 @@ extern size_t mbpdu_handle_req(
 	if (status==MB_NEG_ACK) {++inst->state.nak_counter;}
 	if (status==MB_BUSY) {++inst->state.busy_counter;}
 
-	/* If the device is in listen only more, or was prior to this request;
+	/* If the device is in listen only mode, or was prior to this request;
 	   we don't want to send a response. */
 	return (inst->state.is_listen_only || was_listen_only)
 		? 0u

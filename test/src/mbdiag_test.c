@@ -143,7 +143,7 @@ TEST(mbdiag_restart_comms_with_callback)
 	ASSERT_EQ(0xFF, res[3]); /* Echo data H */
 	ASSERT_EQ(0x00, res[4]); /* Echo data L */
 
-	ASSERT_EQ(1, s_restart_called); /* Callback should have be invoked */
+	ASSERT_EQ(1, s_restart_called); /* Callback should have been invoked */
 	ASSERT_EQ(1, inst.state.event_log_write_pos);
 	ASSERT_EQ(1, inst.state.event_log_count);
 }
@@ -168,7 +168,7 @@ TEST(mbdiag_restart_comms_invalid_data_fails)
 	ASSERT_EQ(2u, res_size);
 	ASSERT(res[0] & MB_ERR_FLG);
 	ASSERT_EQ(MB_ILLEGAL_DATA_VAL, res[1]);
-	ASSERT_EQ(123, inst.state.busy_counter); /* Not modifed */
+	ASSERT_EQ(123, inst.state.busy_counter); /* Not modified */
 }
 
 static uint16_t s_test_diag_value = 0x5678;

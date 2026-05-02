@@ -46,7 +46,7 @@
  * - Transaction id (2 bytes BE)
  * - Protocol id (2 bytes BE)
  * - Length (2 bytes BE) (The rest of the buffer; including unit id)
- * - Unit id (1 byte) (Same as Modbus serial slave addres)
+ * - Unit id (1 byte) (Same as Modbus serial slave address)
  */
 enum {
 	MBAP_POS_TRANS_ID=0u,

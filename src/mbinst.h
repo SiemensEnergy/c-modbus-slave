@@ -362,7 +362,7 @@ struct mbinst_s {
 		 * field allows customization of the line ending character.
 		 *
 		 * @note Default value is '\n' (0x0A - Line Feed)
-		 * @note Set though function 0x08 with sub function 0x0003
+		 * @note Set through function 0x08 with sub function 0x0003
 		 *
 		 * @note Modbus ASCII only
 		 */
@@ -373,7 +373,7 @@ struct mbinst_s {
 /**
  * @brief Initialize internal instance state with default values
  *
- * Initializes all states fields of a Modbus instance structure to safe default values.
+ * Initializes all state fields of a Modbus instance structure to safe default values.
  *
  * @param inst Pointer to the Modbus instance structure to initialize
  */

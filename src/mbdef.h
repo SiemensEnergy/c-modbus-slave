@@ -105,7 +105,7 @@ enum {MB_COMM_EVENT_LOG_LEN=64};
 
 enum { /* Communication log event */
 	/* Receive event*/
-	MB_COMM_EVENT_IS_RECV = 1u<<7, /* Indicated whether the event is a recv event or not */
+	MB_COMM_EVENT_IS_RECV = 1u<<7, /* Indicates whether the event is a recv event or not */
 
 	/* 0 - Not used */
 	MB_COMM_EVENT_RECV_COMM_ERR = 1u<<1, /* Communication Error */
@@ -122,7 +122,7 @@ enum { /* Communication log event */
 	MB_COMM_EVENT_SEND_NAK_EX = 1u<<3, /* Server Program NAK Exception Sent (Exception Code 7) */
 	MB_COMM_EVENT_SEND_WRITE_TIMEOUT = 1u<<4, /* Write Timeout Error Occurred (Not implemented) */
 	MB_COMM_EVENT_SEND_LISTEN_ONLY = 1u<<5, /* Currently in Listen Only Mode */
-	MB_COMM_EVENT_IS_SEND = 1u<<6, /* Indicated whether the event is a send event or not, requires MB_COMM_IS_RECV_EVENT to be 0 */
+	MB_COMM_EVENT_IS_SEND = 1u<<6, /* Indicates whether the event is a send event or not, requires MB_COMM_IS_RECV_EVENT to be 0 */
 
 	/* Other events */
 	MB_COMM_EVENT_COMM_RESTART=0x00u,
