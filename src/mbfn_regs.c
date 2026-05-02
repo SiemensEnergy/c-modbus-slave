@@ -123,7 +123,6 @@ static enum mbstatus_e write_regs(
 	size_t n_regs,
 	uint16_t start_addr,
 	uint16_t n_req_regs,
-	uint8_t byte_count,
 	const uint8_t *req_write_data,
 	struct mbpdu_buf_s *res)
 {
@@ -324,7 +323,6 @@ extern enum mbstatus_e mbfn_write_regs(
 		n_regs,
 		start_addr,
 		n_req_regs,
-		byte_count,
 		req+6u,
 		res);
 }
@@ -443,7 +441,6 @@ extern enum mbstatus_e mbfn_read_write_regs(
 		n_regs,
 		write_start_addr,
 		n_write_regs,
-		write_byte_count,
 		req+10u,
 		NULL); /* No response needed for write part */
 	if (status != MB_OK) {
