@@ -3170,6 +3170,36 @@ TEST(mbpdu_read_write_regs_excess_write_quantity_fails)
 	ASSERT_EQ(MB_ILLEGAL_DATA_VAL, res[1]);
 }
 
+TEST(mbpdu_write_out_of_bounds_fails)
+{
+	uint16_t reg_val = 0u;
+	const struct mbreg_desc_s regs[] = {{
+		.address=0x0000u,
+		.type=MRTYPE_U16,
+		.access=MRACC_RW_PTR,
+		.read={.pu16=&reg_val},
+		.write={.pu16=&reg_val},
+	}};
+	struct mbinst_s inst = {.hold_regs=regs, .n_hold_regs=1u};
+	mbinst_init(&inst);
+
+	uint8_t pdu_data[] = {
+		MBFC_READ_WRITE_REGS,
+		0x00u, 0x00u, /* read start address */
+		0x00u, 0x01u, /* read quantity: 1 */
+		0x00u, 0x00u, /* write start address */
+		0x00u, 0x79u, /* write quantity: 121 */
+		0xF2u,        /* write byte count: 121*2=242 */
+		/* (No data to write) */
+	};
+	uint8_t res[MBPDU_SIZE_MAX];
+	size_t res_size = mbpdu_handle_req(&inst, pdu_data, sizeof pdu_data, res);
+
+	ASSERT_EQ(2u, res_size);
+	ASSERT(res[0] & MB_ERR_FLG);
+	ASSERT_EQ(MB_ILLEGAL_DATA_VAL, res[1]);
+}
+
 TEST_MAIN(
 	mbpdu_read_holding_reg_works,
 	mbpdu_read_input_reg_works,
@@ -3251,5 +3281,6 @@ TEST_MAIN(
 	mbpdu_mask_write_function_access_works,
 	mbpdu_write_multiple_regs_excess_quantity_fails,
 	mbpdu_read_write_regs_excess_read_quantity_fails,
-	mbpdu_read_write_regs_excess_write_quantity_fails
+	mbpdu_read_write_regs_excess_write_quantity_fails,
+	mbpdu_write_out_of_bounds_fails
 );
