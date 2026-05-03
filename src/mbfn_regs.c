@@ -429,6 +429,10 @@ extern enum mbstatus_e mbfn_read_write_regs(
 		return MB_ILLEGAL_DATA_VAL;
 	}
 
+	/* Prevent out of bound buffer read */
+	if (req_len < (10u + (size_t)write_byte_count)) {
+		return MB_ILLEGAL_DATA_VAL;
+	}
 	/* Make sure received byte count matches number of registers to write */
 	if ((n_write_regs*2u) != write_byte_count) {
 		return MB_ILLEGAL_DATA_VAL;

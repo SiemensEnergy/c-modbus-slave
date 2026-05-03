@@ -80,6 +80,15 @@ enum {
 
 enum {
 	/**
+	 * Max response bytes (245 bytes)
+	 * Header per sub request (2 bytes)
+	 * (245 - 2) / 2 = 121
+	 */
+	READ_SUB_REQ_REC_LEN_MAX=121u,
+};
+
+enum {
+	/**
 	 * Function code (1 byte)
 	 * Byte count (1 byte)
 	 */
@@ -180,7 +189,7 @@ extern enum mbstatus_e mbfn_file_read(
 				&& (record_no>MAX_REC_NO)) { /* Range: [0,0x270F] */
 			return MB_ILLEGAL_DATA_ADDR;
 		}
-		if (record_length==0u) {
+		if ((record_length==0u) || (record_length>READ_SUB_REQ_REC_LEN_MAX)) {
 			return MB_ILLEGAL_DATA_VAL;
 		}
 
