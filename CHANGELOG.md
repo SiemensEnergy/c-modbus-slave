@@ -9,7 +9,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
-- Fix read out-of-bound for function code 0x17 (Read/Write Multiple Registers)
+- Prevent read out-of-bound for function code 0x17 (Read/Write Multiple Registers)
+- Prevent integer overflow on 16-bit platforms when handling function code 0x14 (Read File Record)
 
 ## [1.6.2] - 2026-05-02
 
