@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.6.3] - 2026-05-03
+
 ### Fixed
 
 - Prevent read out-of-bound for function code 0x17 (Read/Write Multiple Registers)
