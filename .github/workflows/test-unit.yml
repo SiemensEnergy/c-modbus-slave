@@ -16,7 +16,7 @@ jobs:
         optimization: [-Og, -O0, -O1, -O2, -O3, -Ofast, -Os, -Oz]
 
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
 
       - name: Run unit tests
         run: >-
